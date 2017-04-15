@@ -1,0 +1,36 @@
+buildscript {
+	repositories {
+		jcenter()
+		maven { url = "http://files.minecraftforge.net/maven" }
+	}
+	dependencies {
+		classpath "net.minecraftforge.gradle:ForgeGradle:2.2-SNAPSHOT"
+	}
+}
+apply plugin: "net.minecraftforge.gradle.forge"
+
+ext.modVersion = "1.0.0"
+version = "${modVersion}-1.11.2"
+group = "com.pau101.auginter"
+archivesBaseName = "auginter"
+
+sourceCompatibility = targetCompatibility = JavaVersion.VERSION_1_8
+
+minecraft {
+	version = "1.11.2-13.20.0.2282"
+	runDir = "run"
+	mappings = "stable_29"
+	makeObfSourceJar = false
+}
+
+processResources {
+	inputs.property "version", project.modVersion
+	inputs.property "mcversion", project.minecraft.version
+	from (sourceSets.main.resources.srcDirs) {
+		include "mcmod.info"
+		expand "version": project.modVersion, "mcversion": project.minecraft.version
+	}
+	from (sourceSets.main.resources.srcDirs) {
+		exclude "mcmod.info"
+	}
+}

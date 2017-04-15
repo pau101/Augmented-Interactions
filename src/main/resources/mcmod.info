@@ -1,0 +1,14 @@
+[{
+	"modid": "auginter",
+	"name": "Augmented Interactions",
+	"description": "Interact with the world differently",
+	"version": "${version}",
+	"mcversion": "${mcversion}",
+	"url": "",
+	"updateUrl": "",
+	"authorList": [ "pau101" ],
+	"credits": "",
+	"logoFile": "",
+	"screenshots": [],
+	"dependencies": []
+}]
