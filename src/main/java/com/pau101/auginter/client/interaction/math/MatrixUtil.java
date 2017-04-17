@@ -1,4 +1,4 @@
-package com.pau101.auginter.client.interaction;
+package com.pau101.auginter.client.interaction.math;
 
 import javax.vecmath.Matrix4d;
 import javax.vecmath.Quat4d;

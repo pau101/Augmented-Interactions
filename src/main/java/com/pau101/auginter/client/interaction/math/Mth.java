@@ -1,4 +1,4 @@
-package com.pau101.auginter.client.interaction;
+package com.pau101.auginter.client.interaction.math;
 
 import java.nio.FloatBuffer;
 
@@ -10,7 +10,12 @@ import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
 
 import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.math.RayTraceResult;
+import net.minecraft.util.math.Vec3d;
+import net.minecraft.world.World;
 
 public final class Mth {
 	public static final float PI = (float) Math.PI;
@@ -110,5 +115,26 @@ public final class Mth {
 		float zs = MathHelper.sin(rz / 2);
 		float zc = MathHelper.cos(rz / 2);
 		return new Quat4d(xs * yc * zc + xc * ys * zs, xc * ys * zc - xs * yc * zs, xs * ys * zc + xc * yc * zs, xc * yc * zc - xs * ys * zs);
+	}
+
+	public static RayTraceResult rayTraceBlocks(World world, EntityPlayer player, boolean hitLiquids) {
+		float f = player.rotationPitch;
+		float f1 = player.rotationYaw;
+		double d0 = player.posX;
+		double d1 = player.posY + (double) player.getEyeHeight();
+		double d2 = player.posZ;
+		Vec3d vec3d = new Vec3d(d0, d1, d2);
+		float f2 = MathHelper.cos((float) -Math.toRadians(f1) - PI);
+		float f3 = MathHelper.sin((float) -Math.toRadians(f1) - PI);
+		float f4 = -MathHelper.cos((float) -Math.toRadians(f));
+		float f5 = MathHelper.sin((float) -Math.toRadians(f));
+		float f6 = f3 * f4;
+		float f7 = f2 * f4;
+		double d3 = 5.0D;
+		if (player instanceof EntityPlayerMP) {
+			d3 = ((EntityPlayerMP) player).interactionManager.getBlockReachDistance();
+		}
+		Vec3d vec3d1 = vec3d.addVector((double) f6 * d3, (double) f5 * d3, (double) f7 * d3);
+		return world.rayTraceBlocks(vec3d, vec3d1, hitLiquids, !hitLiquids, false);
 	}
 }

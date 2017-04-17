@@ -1,80 +1,21 @@
 package com.pau101.auginter.client.interaction;
 
+import com.pau101.auginter.client.interaction.animation.Animation;
+
+import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumHand;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.RayTraceResult;
+import net.minecraft.world.World;
 
-public abstract class Interaction {
-	private static final int TRANSFORM_DURATION = 6;
+public interface Interaction<T> {
+	InitiationResult<T> applies(World world, EntityPlayer player, ItemStack stack, int slot, EnumHand hand, RayTraceResult mouseOver);
 
-	protected final ItemStack stack;
-
-	protected final int slot;
-
-	protected final EnumHand hand;
-
-	protected final RayTraceResult mouseOver;
-
-	protected int prevTransform;
-
-	protected int transform;
-
-	public Interaction(ItemStack stack, int slot, EnumHand hand, RayTraceResult mouseOver) {
-		this.stack = stack.copy();
-		this.slot = slot;
-		this.hand = hand;
-		this.mouseOver = mouseOver;
+	default boolean allowBlockActivation(World world, BlockPos pos, IBlockState state) {
+		return true;
 	}
 
-	public final ItemStack getStack() {
-		return stack;
-	}
-
-	public final int getSlot() {
-		return slot;
-	}
-
-	public final EnumHand getHand() {
-		return hand;
-	}
-
-	protected boolean shouldTransform() {
-		return transform < getTransformDuration();
-	}
-
-	protected int getTransformDuration() {
-		return TRANSFORM_DURATION;
-	}
-
-	public final float getTransform(float delta) {
-		return Mth.lerp(prevTransform, transform, delta) / getTransformDuration();
-	}
-
-	public boolean isDone(EntityPlayer player, ItemStack stack) {
-		return isDifferentItem(this.stack, stack);
-	}
-
-	public boolean isDifferentItem(ItemStack first, ItemStack second) {
-		return first.getItem() != second.getItem();
-	}
-
-	public void updatePrev() {
-		prevTransform = transform;
-	}
-
-	public void update(EntityPlayer player, ItemStack held) {
-		if (shouldTransform()) {
-			transform++;
-		}
-	}
-
-	public abstract void transform(MatrixStack matrix, EntityPlayer player, float yaw, boolean isLeft, float delta);
-
-	protected final void untranslatePlayer(MatrixStack matrix, EntityPlayer player, float delta) {
-		double px = Mth.lerp(player.lastTickPosX, player.posX, delta);
-		double py = Mth.lerp(player.lastTickPosY, player.posY, delta);
-		double pz = Mth.lerp(player.lastTickPosZ, player.posZ, delta);
-		matrix.translate(-px, -py, -pz);
-	}
+	Animation create(World world, EntityPlayer player, ItemStack stack, int actionBarSlot, EnumHand hand, RayTraceResult mouseOver, T data);
 }

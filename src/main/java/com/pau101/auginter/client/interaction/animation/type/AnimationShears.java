@@ -1,12 +1,16 @@
-package com.pau101.auginter.client.interactions;
+package com.pau101.auginter.client.interaction.animation.type;
 
-import com.pau101.auginter.client.interaction.InteractionDuratedEntity;
-import com.pau101.auginter.client.interaction.MatrixStack;
-import com.pau101.auginter.client.interaction.Mth;
+import com.pau101.auginter.client.interaction.action.ActionEntity;
+import com.pau101.auginter.client.interaction.action.ActionEntity.Data;
+import com.pau101.auginter.client.interaction.animation.AnimationDurated;
+import com.pau101.auginter.client.interaction.item.ItemPredicate;
+import com.pau101.auginter.client.interaction.math.MatrixStack;
+import com.pau101.auginter.client.interaction.math.Mth;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockColored;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.client.Minecraft;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.passive.EntitySheep;
@@ -22,17 +26,22 @@ import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 
-public final class InteractionShears extends InteractionDuratedEntity {
+public final class AnimationShears extends AnimationDurated<ActionEntity.Data> {
 	private static final float WIDTH = 0.7F;
 
 	private static final float LENGTH = 0.85F;
 
-	public InteractionShears(ItemStack used, int actionBarSlot, EnumHand hand, RayTraceResult mouseOver) {
-		super(used, actionBarSlot, hand, mouseOver);
+	public AnimationShears(ItemStack stack, int actionBarSlot, EnumHand hand, RayTraceResult mouseOver, ItemPredicate itemPredicate) {
+		super(stack, actionBarSlot, hand, mouseOver, itemPredicate, new ActionEntity());
 	}
 
 	@Override
-	protected int getUseTick() {
+	protected ActionEntity.Data getActionData() {
+		return new ActionEntity.Data(getMouseOver(), getHand());
+	}
+
+	@Override
+	protected int getActionTick() {
 		return getDuration() - getTransformDuration();
 	}
 
@@ -42,12 +51,11 @@ public final class InteractionShears extends InteractionDuratedEntity {
 	}
 
 	@Override
-	public void update(EntityPlayer player, ItemStack held) {
-		super.update(player, held);
+	public void update(Minecraft mc, World world, EntityPlayer player, ItemStack held) {
+		super.update(mc, world, player, held);
 		float transform = getTransform(1);
 		if (transform == 1) {
-			Entity entity = mouseOver.entityHit;
-			World world = player.world;
+			Entity entity = getMouseOver().entityHit;
 			float percent = getPercent(1);
 			float rotation = getRotation(percent);
 			float sin = MathHelper.sin(rotation);
@@ -76,15 +84,15 @@ public final class InteractionShears extends InteractionDuratedEntity {
 					world.spawnParticle(EnumParticleTypes.BLOCK_DUST, px, py, pz, 0, 0, 0, Block.getStateId(state));	
 				}
 			}
-			if (tick % 3 == 0 && world.rand.nextFloat() < 0.8F) {
+			if (getTick() % 3 == 0 && world.rand.nextFloat() < 0.8F) {
 				world.playSound(x, y, z, SoundEvents.ENTITY_SHEEP_SHEAR, SoundCategory.PLAYERS, 1, 0.9F + world.rand.nextFloat() * 0.3F, false);
 			}
 		}
 	}
 
 	@Override
-	public void transform(MatrixStack matrix, EntityPlayer player, float yaw, boolean isLeft, float delta) {
-		Entity entity = mouseOver.entityHit;
+	public void transform(MatrixStack matrix, Minecraft mc, World world, EntityPlayer player, float yaw, boolean isLeft, float delta) {
+		Entity entity = getMouseOver().entityHit;
 		double x = Mth.lerp(entity.lastTickPosX, entity.posX, delta);
 		double y = Mth.lerp(entity.lastTickPosY, entity.posY, delta);
 		double z = Mth.lerp(entity.lastTickPosZ, entity.posZ, delta);

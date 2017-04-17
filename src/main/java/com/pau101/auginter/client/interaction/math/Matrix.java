@@ -1,4 +1,4 @@
-package com.pau101.auginter.client.interaction;
+package com.pau101.auginter.client.interaction.math;
 
 import java.util.Stack;
 

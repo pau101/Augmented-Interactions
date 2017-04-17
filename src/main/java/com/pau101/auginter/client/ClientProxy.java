@@ -1,6 +1,6 @@
 package com.pau101.auginter.client;
 
-import com.pau101.auginter.client.interaction.InteractionRenderer;
+import com.pau101.auginter.client.interaction.render.InteractionRenderer;
 import com.pau101.auginter.server.ServerProxy;
 
 import net.minecraft.util.EnumHand;
