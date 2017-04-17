@@ -51,7 +51,7 @@ public abstract class Interaction {
 		return Mth.lerp(prevTransform, transform, delta) / getTransformDuration();
 	}
 
-	public boolean isDone(EntityPlayer player, ItemStack stack, boolean isEquipped) {
+	public boolean isDone(EntityPlayer player, ItemStack stack) {
 		return isDifferentItem(this.stack, stack);
 	}
 
@@ -63,7 +63,7 @@ public abstract class Interaction {
 		prevTransform = transform;
 	}
 
-	public void update(EntityPlayer player, ItemStack held, boolean isEquipped) {
+	public void update(EntityPlayer player, ItemStack held) {
 		if (shouldTransform()) {
 			transform++;
 		}

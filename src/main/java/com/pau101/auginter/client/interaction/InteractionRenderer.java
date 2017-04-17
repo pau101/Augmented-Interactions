@@ -17,6 +17,7 @@ import com.google.common.cache.LoadingCache;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Multimap;
+import com.pau101.auginter.client.interactions.InteractionBucketDrain;
 import com.pau101.auginter.client.interactions.InteractionBucketFill;
 import com.pau101.auginter.client.interactions.InteractionFlintAndSteel;
 import com.pau101.auginter.client.interactions.InteractionShears;
@@ -140,6 +141,27 @@ public final class InteractionRenderer {
 			}
 			return false;
 		}, InteractionBucketFill::new);
+		register(InteractionType.USE, (stack, slot, hand, mouseOver) -> {
+			if (!stack.hasCapability(CapabilityFluidHandler.FLUID_HANDLER_ITEM_CAPABILITY, null)) {
+				return false;
+			}
+			FluidStack fs = FluidUtil.getFluidContained(stack);
+			if (fs == null || fs.amount == 0) {
+				return false;
+			}
+			RayTraceResult result = rayTrace(mc.world, mc.player, true);
+			if (result != null && result.typeOfHit == RayTraceResult.Type.BLOCK) {
+				BlockPos pos = result.getBlockPos();
+				boolean replaceable = mc.world.getBlockState(pos).getBlock().isReplaceable(mc.world, pos);
+				pos = replaceable && result.sideHit == EnumFacing.UP ? pos : pos.offset(result.sideHit);
+				IBlockState state = mc.world.getBlockState(pos);
+				if (mc.world.isAirBlock(pos) || !state.getMaterial().isSolid() || state.getBlock().isReplaceable(mc.world, pos)) {
+					mouseOver.setValue(new RayTraceResult(result.hitVec, result.sideHit, pos));
+					return true;
+				}
+			}
+			return false;
+		}, InteractionBucketDrain::new);
 	}
 
 	private static RayTraceResult rayTrace(World worldIn, EntityPlayer playerIn, boolean useLiquids) {
@@ -292,9 +314,8 @@ public final class InteractionRenderer {
 		while (inters.hasNext()) {
 			Interaction interaction = inters.next();
 			EnumHand hand = interaction.getHand();
-			boolean isEquipped = hand == EnumHand.OFF_HAND || interaction.getSlot() == player.inventory.currentItem;
-			interaction.update(player, player.getHeldItem(hand), isEquipped);
-			if (interaction.isDone(player, hand == EnumHand.MAIN_HAND ? main.func_190926_b() ? player.getHeldItem(hand) : main : off.func_190926_b() ? player.getHeldItem(hand) : off, isEquipped)) {
+			interaction.update(player, player.getHeldItem(hand));
+			if (interaction.isDone(player, hand == EnumHand.MAIN_HAND ? main.func_190926_b() ? player.getHeldItem(hand) : main : off.func_190926_b() ? player.getHeldItem(hand) : off)) {
 				inters.remove();
 			}
 		}

@@ -42,8 +42,8 @@ public final class InteractionShears extends InteractionDuratedEntity {
 	}
 
 	@Override
-	public void update(EntityPlayer player, ItemStack held, boolean isEquipped) {
-		super.update(player, held, isEquipped);
+	public void update(EntityPlayer player, ItemStack held) {
+		super.update(player, held);
 		float transform = getTransform(1);
 		if (transform == 1) {
 			Entity entity = mouseOver.entityHit;

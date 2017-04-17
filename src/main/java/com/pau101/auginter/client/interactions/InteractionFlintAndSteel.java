@@ -33,8 +33,8 @@ public class InteractionFlintAndSteel extends InteractionDuratedBlock {
 	}
 
 	@Override
-	public void update(EntityPlayer player, ItemStack stack, boolean isEquipped) {
-		super.update(player, stack, isEquipped);
+	public void update(EntityPlayer player, ItemStack stack) {
+		super.update(player, stack);
 		if (tick >= getTransformDuration() && tick < getDuration() - getTransformDuration() && (tick - getTransformDuration()) % ((getDuration() - getTransformDuration() * 2) / 2) == 0) {
 			Vec3d pos = mouseOver.hitVec.add(new Vec3d(mouseOver.sideHit.getDirectionVec()).scale(0.4F));
 			Vec3d vec = player.getLook(1);

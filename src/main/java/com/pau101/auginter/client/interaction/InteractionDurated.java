@@ -28,8 +28,8 @@ public abstract class InteractionDurated extends Interaction {
 	}
 
 	@Override
-	public boolean isDone(EntityPlayer player, ItemStack stack, boolean isEquipped) {
-		return super.isDone(player, stack, isEquipped) || tick >= getDuration();
+	public boolean isDone(EntityPlayer player, ItemStack stack) {
+		return super.isDone(player, stack) || tick >= getDuration();
 	}
 
 	protected UseState getUseStage() {
@@ -40,6 +40,8 @@ public abstract class InteractionDurated extends Interaction {
 		return Mth.lerp(prevTick, tick, delta);
 	}
 
+	protected void onUse() {}
+
 	@Override
 	public void updatePrev() {
 		super.updatePrev();
@@ -47,13 +49,18 @@ public abstract class InteractionDurated extends Interaction {
 	}
 
 	@Override
-	public void update(EntityPlayer player, ItemStack stack, boolean isEquipped) {
-		super.update(player, stack, isEquipped);
+	public void update(EntityPlayer player, ItemStack stack) {
+		super.update(player, stack);
 		int duration = getDuration(), tDuration = getTransformDuration();
 		if (tick < duration) {
 			tick++;
 			if (tick == getUseTick()) {
-				useState = use() ? UseState.USE_SUCCEEDED : UseState.USE_FAILED;
+				if (use()) {
+					useState = UseState.USE_SUCCEEDED;	
+					onUse();
+				} else {
+					useState = UseState.USE_FAILED;
+				}
 			}
 			if (duration - tDuration > tDuration && tick >= duration - tDuration && transform > 0) {
 				transform--;
