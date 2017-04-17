@@ -44,25 +44,25 @@ public final class InteractionShears extends InteractionDuratedEntity {
 	@Override
 	public void update(EntityPlayer player, ItemStack held, boolean isEquipped) {
 		super.update(player, held, isEquipped);
-		Entity entity = mouseOver.entityHit;
-		World world = player.world;
-		float percent = getPercent(1);
-		float rotation = getRotation(percent);
 		float transform = getTransform(1);
-		float sin = MathHelper.sin(rotation);
-		float cos = MathHelper.cos(rotation);
-		float elv = getElevation(percent, transform) + 0.15F;
-		float entityYaw;
-		if (entity instanceof EntityLivingBase) {
-			entityYaw = ((EntityLivingBase) entity).renderYawOffset;
-		} else {
-			entityYaw = entity.rotationYaw;
-		}
-		Vec3d pos = new Vec3d(cos * (WIDTH - 0.2F), 0, sin * (LENGTH - 0.2F)).rotateYaw((float) -Math.toRadians(entityYaw));
-		double x = entity.posX + pos.xCoord;
-		double y = entity.posY + entity.height + elv;
-		double z = entity.posZ + pos.zCoord;
 		if (transform == 1) {
+			Entity entity = mouseOver.entityHit;
+			World world = player.world;
+			float percent = getPercent(1);
+			float rotation = getRotation(percent);
+			float sin = MathHelper.sin(rotation);
+			float cos = MathHelper.cos(rotation);
+			float elv = getElevation(percent, transform) + 0.15F;
+			float entityYaw;
+			if (entity instanceof EntityLivingBase) {
+				entityYaw = ((EntityLivingBase) entity).renderYawOffset;
+			} else {
+				entityYaw = entity.rotationYaw;
+			}
+			Vec3d pos = new Vec3d(cos * (WIDTH - 0.2F), 0, sin * (LENGTH - 0.2F)).rotateYaw((float) -Math.toRadians(entityYaw));
+			double x = entity.posX + pos.xCoord;
+			double y = entity.posY + entity.height + elv;
+			double z = entity.posZ + pos.zCoord;
 			if (world.rand.nextBoolean()) {
 				IBlockState state = Blocks.WOOL.getDefaultState();
 				if (entity instanceof EntitySheep) {

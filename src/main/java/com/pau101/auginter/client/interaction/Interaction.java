@@ -21,7 +21,7 @@ public abstract class Interaction {
 	protected int transform;
 
 	public Interaction(ItemStack stack, int slot, EnumHand hand, RayTraceResult mouseOver) {
-		this.stack = stack;
+		this.stack = stack.copy();
 		this.slot = slot;
 		this.hand = hand;
 		this.mouseOver = mouseOver;
@@ -51,12 +51,12 @@ public abstract class Interaction {
 		return Mth.lerp(prevTransform, transform, delta) / getTransformDuration();
 	}
 
-	public boolean isDone(EntityPlayer player, ItemStack stack) {
+	public boolean isDone(EntityPlayer player, ItemStack stack, boolean isEquipped) {
 		return isDifferentItem(this.stack, stack);
 	}
 
 	public boolean isDifferentItem(ItemStack first, ItemStack second) {
-		return (first == null) != (second == null) || first != null && second != null && first.getItem() != second.getItem();
+		return first.getItem() != second.getItem();
 	}
 
 	public void updatePrev() {
@@ -64,7 +64,7 @@ public abstract class Interaction {
 	}
 
 	public void update(EntityPlayer player, ItemStack held, boolean isEquipped) {
-		if (isEquipped && shouldTransform()) {
+		if (shouldTransform()) {
 			transform++;
 		}
 	}

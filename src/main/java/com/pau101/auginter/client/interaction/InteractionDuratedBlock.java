@@ -14,18 +14,19 @@ public abstract class InteractionDuratedBlock extends InteractionDurated {
 	}
 
 	@Override
-	protected final void use() {
+	protected final boolean use() {
 		Minecraft mc = Minecraft.getMinecraft();
-		BlockPos blockpos = mouseOver.getBlockPos();
-		if (mc.world.getBlockState(blockpos).getMaterial() != Material.AIR) {
-			int stackcount = stack.func_190916_E();
-			EnumActionResult result = mc.playerController.processRightClickBlock(mc.player, mc.world, blockpos, mouseOver.sideHit, mouseOver.hitVec, hand);
+		BlockPos pos = mouseOver.getBlockPos();
+		if (mc.world.getBlockState(pos).getMaterial() != Material.AIR) {
+			int count = stack.func_190916_E();
+			EnumActionResult result = mc.playerController.processRightClickBlock(mc.player, mc.world, pos, mouseOver.sideHit, mouseOver.hitVec, hand);
 			if (result == EnumActionResult.SUCCESS) {
-				mc.player.swingArm(hand);
-				if (!stack.func_190926_b() && (stack.func_190916_E() != stackcount || mc.playerController.isInCreativeMode())) {
+				if (!stack.func_190926_b() && (stack.func_190916_E() != count || mc.playerController.isInCreativeMode())) {
 					mc.entityRenderer.itemRenderer.resetEquippedProgress(hand);
 				}
+				return true;
 			}
 		}
+		return false;
 	}
 }

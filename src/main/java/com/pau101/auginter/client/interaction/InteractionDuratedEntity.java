@@ -13,11 +13,12 @@ public abstract class InteractionDuratedEntity extends InteractionDurated {
 	}
 
 	@Override
-	protected final void use() {
+	protected final boolean use() {
 		Minecraft mc = Minecraft.getMinecraft();
 		EntityPlayer player = mc.player;
 		if (mc.playerController.interactWithEntity(player, mouseOver.entityHit, mouseOver, hand) != EnumActionResult.SUCCESS) {
-			mc.playerController.interactWithEntity(player, mouseOver.entityHit, hand);
+			return mc.playerController.interactWithEntity(player, mouseOver.entityHit, hand) == EnumActionResult.SUCCESS;
 		}
+		return false;
 	}
 }

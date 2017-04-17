@@ -5,11 +5,13 @@ import com.pau101.auginter.client.interaction.MatrixStack;
 import com.pau101.auginter.client.interaction.Mth;
 
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.init.Blocks;
 import net.minecraft.init.SoundEvents;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.EnumParticleTypes;
 import net.minecraft.util.SoundCategory;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.math.Vec3d;
@@ -22,7 +24,7 @@ public class InteractionFlintAndSteel extends InteractionDuratedBlock {
 
 	@Override
 	protected int getUseTick() {
-		return getDuration() - getTransformDuration();
+		return getDuration() / 2;
 	}
 
 	@Override
@@ -33,7 +35,7 @@ public class InteractionFlintAndSteel extends InteractionDuratedBlock {
 	@Override
 	public void update(EntityPlayer player, ItemStack stack, boolean isEquipped) {
 		super.update(player, stack, isEquipped);
-		if (tick < getDuration() - getTransformDuration() && (tick - getTransformDuration()) % ((getDuration() - getTransformDuration() * 2) / 2) == 0) {
+		if (tick >= getTransformDuration() && tick < getDuration() - getTransformDuration() && (tick - getTransformDuration()) % ((getDuration() - getTransformDuration() * 2) / 2) == 0) {
 			Vec3d pos = mouseOver.hitVec.add(new Vec3d(mouseOver.sideHit.getDirectionVec()).scale(0.4F));
 			Vec3d vec = player.getLook(1);
 			World world = player.world;
@@ -41,7 +43,10 @@ public class InteractionFlintAndSteel extends InteractionDuratedBlock {
 			while (num --> 0) {
 				world.spawnParticle(EnumParticleTypes.SMOKE_NORMAL, pos.xCoord, pos.yCoord, pos.zCoord, 0, 0, 0);
 			}
-			world.playSound(pos.xCoord, pos.yCoord, pos.zCoord, SoundEvents.ITEM_FLINTANDSTEEL_USE, SoundCategory.BLOCKS, 1, 0.8F + world.rand.nextFloat() * 0.4F, false);
+			BlockPos ignitePos = mouseOver.getBlockPos().offset(mouseOver.sideHit);
+			if (tick != getUseTick() || player.world.getBlockState(ignitePos).getBlock() != Blocks.FIRE) {
+				world.playSound(pos.xCoord, pos.yCoord, pos.zCoord, SoundEvents.ITEM_FLINTANDSTEEL_USE, SoundCategory.BLOCKS, 1, 0.8F + world.rand.nextFloat() * 0.4F, false);
+			}
 		}
 	}
 

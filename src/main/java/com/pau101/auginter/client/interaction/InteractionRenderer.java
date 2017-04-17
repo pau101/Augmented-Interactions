@@ -1,11 +1,13 @@
 package com.pau101.auginter.client.interaction;
 
 import java.lang.reflect.Method;
+import java.util.ArrayDeque;
 import java.util.Iterator;
 
 import javax.vecmath.Matrix4d;
 import javax.vecmath.Matrix4f;
 
+import org.apache.commons.lang3.mutable.MutableObject;
 import org.apache.commons.lang3.tuple.Pair;
 import org.lwjgl.opengl.GL11;
 
@@ -15,6 +17,7 @@ import com.google.common.cache.LoadingCache;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Multimap;
+import com.pau101.auginter.client.interactions.InteractionBucketFill;
 import com.pau101.auginter.client.interactions.InteractionFlintAndSteel;
 import com.pau101.auginter.client.interactions.InteractionShears;
 
@@ -23,12 +26,15 @@ import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
+import net.minecraft.client.particle.Particle;
+import net.minecraft.client.particle.ParticleManager;
 import net.minecraft.client.renderer.ActiveRenderInfo;
 import net.minecraft.client.renderer.EntityRenderer;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.ItemRenderer;
 import net.minecraft.client.renderer.OpenGlHelper;
 import net.minecraft.client.renderer.RenderHelper;
+import net.minecraft.client.renderer.VertexBuffer;
 import net.minecraft.client.renderer.block.model.IBakedModel;
 import net.minecraft.client.renderer.block.model.ItemCameraTransforms;
 import net.minecraft.client.renderer.block.model.ItemCameraTransforms.TransformType;
@@ -36,6 +42,7 @@ import net.minecraft.client.renderer.block.model.ItemTransformVec3f;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.init.Items;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -45,15 +52,21 @@ import net.minecraft.util.EnumHandSide;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.RayTraceResult;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import net.minecraftforge.client.ForgeHooksClient;
 import net.minecraftforge.client.event.RenderSpecificHandEvent;
-import net.minecraftforge.client.event.RenderWorldLastEvent;
 import net.minecraftforge.client.model.IPerspectiveAwareModel;
 import net.minecraftforge.common.IShearable;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.fluids.Fluid;
+import net.minecraftforge.fluids.FluidStack;
+import net.minecraftforge.fluids.FluidUtil;
+import net.minecraftforge.fluids.capability.CapabilityFluidHandler;
+import net.minecraftforge.fluids.capability.IFluidHandler;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
+import net.minecraftforge.fml.relauncher.ReflectionHelper;
 import net.minecraftforge.oredict.OreDictionary;
 
 public final class InteractionRenderer {
@@ -88,14 +101,16 @@ public final class InteractionRenderer {
 
 	public InteractionRenderer() {
 		MinecraftForge.EVENT_BUS.register(this);
-		register(InteractionType.ENTITY, (stack, slot, hand, mouseOver) -> {
+		register(InteractionType.ENTITY, (stack, slot, hand, mouseOverMut) -> {
+			RayTraceResult mouseOver = mouseOverMut.getValue();
 			Entity entity = mouseOver.entityHit;
 			if (stack.getItem() == Items.SHEARS && entity instanceof IShearable && entity instanceof EntityLivingBase) {
 				return ((IShearable) entity).isShearable(stack, entity.world, new BlockPos(entity));
 			}
 			return false;
 		}, InteractionShears::new);
-		register(InteractionType.BLOCK, (stack, slot, hand, mouseOver) -> {
+		register(InteractionType.BLOCK, (stack, slot, hand, mouseOverMut) -> {
+			RayTraceResult mouseOver = mouseOverMut.getValue();
 			if (stack.getItem() == Items.FLINT_AND_STEEL) {
 				if (mc.player.isSneaking() && !stack.getItem().doesSneakBypassUse(stack, mc.world, mouseOver.getBlockPos(), mc.player)) {
 					return true;
@@ -104,6 +119,48 @@ public final class InteractionRenderer {
 			}
 			return false;
 		}, InteractionFlintAndSteel::new);
+		register(InteractionType.USE, (stack, slot, hand, mouseOver) -> {
+			if (!stack.hasCapability(CapabilityFluidHandler.FLUID_HANDLER_ITEM_CAPABILITY, null)) {
+				return false;
+			}
+			FluidStack fs = FluidUtil.getFluidContained(stack);
+			if (fs != null && fs.amount >= Fluid.BUCKET_VOLUME) {
+				return false;
+			}
+			RayTraceResult result = rayTrace(mc.world, mc.player, true);
+			if (result != null && result.typeOfHit == RayTraceResult.Type.BLOCK) {
+				BlockPos pos = result.getBlockPos();
+				if (mc.world.getBlockState(pos).getMaterial().isLiquid()) {
+					IFluidHandler fluid = FluidUtil.getFluidHandler(mc.world, pos, result.sideHit);
+					if (fluid.drain(Integer.MAX_VALUE, false).amount > 0) {
+						mouseOver.setValue(result);
+						return true;
+					}	
+				}
+			}
+			return false;
+		}, InteractionBucketFill::new);
+	}
+
+	private static RayTraceResult rayTrace(World worldIn, EntityPlayer playerIn, boolean useLiquids) {
+		float f = playerIn.rotationPitch;
+		float f1 = playerIn.rotationYaw;
+		double d0 = playerIn.posX;
+		double d1 = playerIn.posY + (double) playerIn.getEyeHeight();
+		double d2 = playerIn.posZ;
+		Vec3d vec3d = new Vec3d(d0, d1, d2);
+		float f2 = MathHelper.cos((float) -Math.toRadians(f1)- Mth.PI);
+		float f3 = MathHelper.sin((float) -Math.toRadians(f1) - Mth.PI);
+		float f4 = -MathHelper.cos((float) -Math.toRadians(f));
+		float f5 = MathHelper.sin((float) -Math.toRadians(f));
+		float f6 = f3 * f4;
+		float f7 = f2 * f4;
+		double d3 = 5.0D;
+		if (playerIn instanceof EntityPlayerMP) {
+			d3 = ((EntityPlayerMP) playerIn).interactionManager.getBlockReachDistance();
+		}
+		Vec3d vec3d1 = vec3d.addVector((double) f6 * d3, (double) f5 * d3, (double) f7 * d3);
+		return worldIn.rayTraceBlocks(vec3d, vec3d1, useLiquids, !useLiquids, false);
 	}
 
 	private void register(Item item, InteractionType type, InteractionFactory interaction) {
@@ -138,6 +195,31 @@ public final class InteractionRenderer {
 		interactions.put(hand, interaction);
 	}
 
+	// RenderWorldLastEvent is a terrible place to render things so we do this
+	private final Particle renderHook = new Particle(null, 0, 0, 0, 0, 0, 0) {
+		@Override
+		public int getFXLayer() {
+			return 3;
+		}
+
+		@Override
+		public void onUpdate() {}
+
+		@Override
+		public void move(double x, double y, double z) {}
+
+		@Override
+		public void setPosition(double x, double y, double z) {}
+
+		@Override
+		public void renderParticle(VertexBuffer buf, Entity nil, float delta, float x, float z, float yz, float xy, float xz) {
+			EntityPlayerSP player = mc.player;
+			if (hasInteractions() && shouldRender(player)) {
+				render(player, delta);
+			}
+		}
+	};
+
 	@SubscribeEvent
 	public void tick(TickEvent.ClientTickEvent event) {
 		EntityPlayer player = mc.player;
@@ -146,22 +228,15 @@ public final class InteractionRenderer {
 				tickStart();
 			} else {
 				tickEnd(player);
+				injectRenderHook();
 			}
 		}
 	}
 
 	@SubscribeEvent
 	public void renderSpecificHand(RenderSpecificHandEvent event) {
-		if (shouldRender(mc.player)) {
+		if (interactions.get(event.getHand()).size() > 0 && shouldRender(mc.player)) {
 			event.setCanceled(true);
-		}
-	}
-
-	@SubscribeEvent
-	public void render(RenderWorldLastEvent event) {
-		EntityPlayerSP player = mc.player;
-		if (shouldRender(player)) {
-			render(player, event.getPartialTicks());
 		}
 	}
 
@@ -175,6 +250,11 @@ public final class InteractionRenderer {
 				return true;
 			}
 		}
+		Interaction interaction = getInteraction(mc.player, hand, mouseOver, interactionRegistry.get(InteractionType.USE));
+		if (interaction != null) {
+			start(hand, interaction);
+			return true;
+		}
 		return false;
 	}
 
@@ -182,11 +262,20 @@ public final class InteractionRenderer {
 		ItemStack stack = player.getHeldItem(hand);
 		int slot = hand == EnumHand.MAIN_HAND ? player.inventory.currentItem : -1;
 		for (InteractionRegistration reg : regs) {
-			if (reg.applies(stack, slot, hand, mouseOver)) {
-				return reg.createInteration(stack, slot, hand, mouseOver);
+			MutableObject<RayTraceResult> mouseOverMut = new MutableObject<>(mouseOver);
+			if (reg.applies(stack, slot, hand, mouseOverMut)) {
+				return reg.createInteration(stack, slot, hand, mouseOverMut.getValue());
 			}
 		}
 		return null;
+	}
+
+	private void injectRenderHook() {
+		ArrayDeque<Particle>[][] fxLayers = ReflectionHelper.getPrivateValue(ParticleManager.class, mc.effectRenderer, "fxLayers");
+		ArrayDeque<Particle> layer = fxLayers[renderHook.getFXLayer()][0];
+		if (!layer.contains(renderHook)) {
+			layer.addFirst(renderHook);
+		}
 	}
 
 	private void tickStart() {
@@ -197,36 +286,34 @@ public final class InteractionRenderer {
 
 	private void tickEnd(EntityPlayer player) {
 		ItemRenderer renderer = mc.getItemRenderer();
-		ItemStack mainHand = renderer.itemStackMainHand;
-		ItemStack offHand = renderer.itemStackOffHand;
 		Iterator<Interaction> inters = interactions.values().iterator();
+		ItemStack main = renderer.itemStackMainHand;
+		ItemStack off = renderer.itemStackOffHand;
 		while (inters.hasNext()) {
 			Interaction interaction = inters.next();
 			EnumHand hand = interaction.getHand();
-			interaction.update(player, player.getHeldItem(hand), hand == EnumHand.OFF_HAND || interaction.getSlot() == player.inventory.currentItem);
-			if (interaction.isDone(player, hand == EnumHand.MAIN_HAND ? mainHand : offHand)) {
+			boolean isEquipped = hand == EnumHand.OFF_HAND || interaction.getSlot() == player.inventory.currentItem;
+			interaction.update(player, player.getHeldItem(hand), isEquipped);
+			if (interaction.isDone(player, hand == EnumHand.MAIN_HAND ? main.func_190926_b() ? player.getHeldItem(hand) : main : off.func_190926_b() ? player.getHeldItem(hand) : off, isEquipped)) {
 				inters.remove();
 			}
 		}
 	}
 
 	private boolean shouldRender(EntityPlayer player) {
-		return hasInteractions() && player != null && player == mc.getRenderViewEntity() && mc.gameSettings.thirdPersonView == 0 && !mc.gameSettings.hideGUI && !player.isPlayerSleeping() && !mc.playerController.isSpectator();
+		return player != null && player == mc.getRenderViewEntity() && mc.gameSettings.thirdPersonView == 0 && !mc.gameSettings.hideGUI && !player.isPlayerSleeping() && !mc.playerController.isSpectator();
 	}
 
 	private void render(EntityPlayerSP player, float delta) {
-		mc.entityRenderer.enableLightmap();
-		GlStateManager.enableFog();
 		RenderHelper.enableStandardItemLighting();
-		GlStateManager.enableRescaleNormal();
 		// setLightmap
 		int light = mc.world.getCombinedLight(new BlockPos(player.posX, player.posY + player.getEyeHeight(), player.posZ), 0);
 		OpenGlHelper.setLightmapTextureCoords(OpenGlHelper.lightmapTexUnit, (light & 0xFFFF), (light >> 16));
+		GlStateManager.color(1, 1, 1);
 		for (Interaction inter : interactions.values()) {
 			render(player, inter, delta);
 		}
-		mc.entityRenderer.disableLightmap();
-		GlStateManager.disableFog();
+		RenderHelper.disableStandardItemLighting();
 	}
 
 	private void render(EntityPlayerSP player, Interaction interaction, float delta) {
@@ -244,11 +331,17 @@ public final class InteractionRenderer {
 			pep = renderer.prevEquippedProgressOffHand;
 			ep = renderer.equippedProgressOffHand;
 		}
-		float equip;
-		if (interaction.isDifferentItem(stack, player.getHeldItem(interaction.hand))) {
+		if (stack.func_190926_b()) {
+			stack = player.getHeldItem(interaction.hand);
+		}
+		ItemStack heldStack = player.getHeldItem(interaction.hand);
+		float equip, renderEquip;
+		if (interaction.isDifferentItem(stack, heldStack)) {
 			equip = 1 - Mth.lerp(pep, ep, delta);
+			renderEquip = ep == 1 ? 0 : 1;
 		} else {
 			equip = 1 - interaction.getTransform(delta);
+			renderEquip = 0;
 		}
 		GlStateManager.pushMatrix();
 		float yaw = Mth.lerp(player.prevRotationYaw, player.rotationYaw, delta);
@@ -258,7 +351,6 @@ public final class InteractionRenderer {
 			GlStateManager.matrixMode(GL11.GL_PROJECTION);
 			GlStateManager.pushMatrix();
 			GlStateManager.matrixMode(GL11.GL_MODELVIEW);
-			float renderEquip = ep == 1 ? 0 : 1;
 			interpolateWorldToHeld(player, stack, yaw, isLeft, isMainHand, interaction::transform, equip, renderEquip, delta);
 		}
 		mc.getRenderItem().renderItem(stack, player, TransformType.NONE, false);
@@ -398,7 +490,7 @@ public final class InteractionRenderer {
 
 	@FunctionalInterface
 	public interface InteractionPredicate {
-		boolean applies(ItemStack stack, int slot, EnumHand hand, RayTraceResult mouseOver);
+		boolean applies(ItemStack stack, int slot, EnumHand hand, MutableObject<RayTraceResult> mouseOver);
 	}
 
 	@FunctionalInterface
@@ -416,7 +508,7 @@ public final class InteractionRenderer {
 			this.interaction = interaction;
 		}
 
-		public boolean applies(ItemStack stack, int slot, EnumHand hand, RayTraceResult mouseOver) {
+		public boolean applies(ItemStack stack, int slot, EnumHand hand, MutableObject<RayTraceResult> mouseOver) {
 			return predicate.applies(stack, slot, hand, mouseOver);
 		}
 

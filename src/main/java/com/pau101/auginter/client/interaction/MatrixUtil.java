@@ -6,11 +6,12 @@ import javax.vecmath.Vector3d;
 
 /*
  * Copy vecmath 1.5.2 SVD source attachment here since it does not match 1.5.2 binaries that contain a bug
+ * which produces NaN, but also the source matrix3 to quaternion was still wrong so it was been replaced.
  */
-public final class Matrix4dScaleRotateFixed {
+public final class MatrixUtil {
 	private static final double EPS = 1E-10;
 
-	private Matrix4dScaleRotateFixed() {}
+	private MatrixUtil() {}
 
 	public static Vector3d getScale(Matrix4d mat) {
 		double[] scale = new double[3];
@@ -18,38 +19,46 @@ public final class Matrix4dScaleRotateFixed {
 		return new Vector3d(scale);
 	}
 
-	public static void get(Matrix4d mat, Quat4d q1) {
-		double[] tmp_rot = new double[9]; // scratch matrix
-		double[] tmp_scale = new double[3]; // scratch matrix
+	// http://www.euclideanspace.com/maths/geometry/rotations/conversions/matrixToQuaternion/
+	public static void getQuat(Matrix4d mat, Quat4d q1) {
+		double[] tmp_rot = new double[9];
+		double[] tmp_scale = new double[3];
 		getScaleRotate(mat, tmp_scale, tmp_rot);
-		double ww;
-		ww = 0.25 * (1 + tmp_rot[0] + tmp_rot[4] + tmp_rot[8]);
-		if (!((ww < 0 ? -ww : ww) < 1e-30)) {
-			q1.w = Math.sqrt(ww);
-			ww = 0.25 / q1.w;
-			q1.x = (tmp_rot[7] - tmp_rot[5]) * ww;
-			q1.y = (tmp_rot[2] - tmp_rot[6]) * ww;
-			q1.z = (tmp_rot[3] - tmp_rot[1]) * ww;
-			return;
+		double m00 = tmp_rot[0];
+		double m01 = tmp_rot[1];
+		double m02 = tmp_rot[2];
+		double m10 = tmp_rot[3];
+		double m11 = tmp_rot[4];
+		double m12 = tmp_rot[5];
+		double m20 = tmp_rot[6];
+		double m21 = tmp_rot[7];
+		double m22 = tmp_rot[8];
+		double tr = m00 + m11 + m22;
+		if (tr > 0) {
+			double s = Math.sqrt(1 + tr) * 2;
+			q1.w = 0.25 * s;
+			q1.x = (m21 - m12) / s;
+			q1.y = (m02 - m20) / s;
+			q1.z = (m10 - m01) / s;
+		} else if ((m00 > m11) && (m00 > m22)) {
+			double s = Math.sqrt(1 + m00 - m11 - m22) * 2;
+			q1.w = (m21 - m12) / s;
+			q1.x = 0.25 * s;
+			q1.y = (m01 + m10) / s;
+			q1.z = (m02 + m20) / s;
+		} else if (m11 > m22) {
+			double s = Math.sqrt(1 + m11 - m00 - m22) * 2;
+			q1.w = (m02 - m20) / s;
+			q1.x = (m01 + m10) / s;
+			q1.y = 0.25 * s;
+			q1.z = (m12 + m21) / s;
+		} else {
+			double s = Math.sqrt(1 + m22 - m00 - m11) * 2;
+			q1.w = (m10 - m01) / s;
+			q1.x = (m02 + m20) / s;
+			q1.y = (m12 + m21) / s;
+			q1.z = 0.25 * s;
 		}
-		q1.w = 0f;
-		ww = -0.5 * (tmp_rot[4] + tmp_rot[8]);
-		if (!((ww < 0 ? -ww : ww) < 1e-30)) {
-			q1.x = Math.sqrt(ww);
-			ww = 0.5 / q1.x;
-			q1.y = tmp_rot[3] * ww;
-			q1.z = tmp_rot[6] * ww;
-			return;
-		}
-		q1.x = 0;
-		ww = 0.5 * (1 - tmp_rot[8]);
-		if (!((ww < 0 ? -ww : ww) < 1e-30)) {
-			q1.y = Math.sqrt(ww);
-			q1.z = tmp_rot[7] / (2 * q1.y);
-			return;
-		}
-		q1.y = 0;
-		q1.z = 1;
 	}
 
 	private static void getScaleRotate(Matrix4d mat, double scales[], double rots[]) {

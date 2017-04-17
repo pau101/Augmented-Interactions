@@ -34,14 +34,14 @@ public final class Mth {
 	public static Matrix4d lerp(Matrix4d a, Matrix4d b, double t) {
 		Quat4d aRot = new Quat4d();
 		Quat4d bRot = new Quat4d();
-		Matrix4dScaleRotateFixed.get(a, aRot);
-		Matrix4dScaleRotateFixed.get(b, bRot);
+		MatrixUtil.getQuat(a, aRot);
+		MatrixUtil.getQuat(b, bRot);
 		Vector3d aTrans = new Vector3d();
 		Vector3d bTrans = new Vector3d();
 		a.get(aTrans);
 		b.get(bTrans);
-		Vector3d aScale = Matrix4dScaleRotateFixed.getScale(a);
-		Vector3d bScale = Matrix4dScaleRotateFixed.getScale(b);
+		Vector3d aScale = MatrixUtil.getScale(a);
+		Vector3d bScale = MatrixUtil.getScale(b);
 		aRot.interpolate(bRot, t);
 		aTrans.interpolate(bTrans, t);
 		aScale.interpolate(bScale, t);
