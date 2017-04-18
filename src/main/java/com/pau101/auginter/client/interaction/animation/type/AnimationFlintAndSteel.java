@@ -1,8 +1,9 @@
 package com.pau101.auginter.client.interaction.animation.type;
 
+import java.util.function.Predicate;
+
 import com.pau101.auginter.client.interaction.action.ActionBlock;
 import com.pau101.auginter.client.interaction.animation.AnimationDurated;
-import com.pau101.auginter.client.interaction.item.ItemPredicate;
 import com.pau101.auginter.client.interaction.math.MatrixStack;
 import com.pau101.auginter.client.interaction.math.Mth;
 
@@ -21,7 +22,7 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 
 public final class AnimationFlintAndSteel extends AnimationDurated<ActionBlock.Data> {
-	public AnimationFlintAndSteel(ItemStack stack, int actionBarSlot, EnumHand hand, RayTraceResult mouseOver, ItemPredicate itemPredicate) {
+	public AnimationFlintAndSteel(ItemStack stack, int actionBarSlot, EnumHand hand, RayTraceResult mouseOver, Predicate<ItemStack> itemPredicate) {
 		super(stack, actionBarSlot, hand, mouseOver, itemPredicate, new ActionBlock());
 	}
 
@@ -31,7 +32,7 @@ public final class AnimationFlintAndSteel extends AnimationDurated<ActionBlock.D
 	}
 
 	@Override
-	protected int getActionTick() {
+	protected int getActionTick(Minecraft mc, World world, EntityPlayer player) {
 		return getDuration() / 2;
 	}
 
@@ -53,7 +54,7 @@ public final class AnimationFlintAndSteel extends AnimationDurated<ActionBlock.D
 				world.spawnParticle(EnumParticleTypes.SMOKE_NORMAL, pos.xCoord, pos.yCoord, pos.zCoord, 0, 0, 0);
 			}
 			BlockPos ignitePos = mouseOver.getBlockPos().offset(mouseOver.sideHit);
-			if (tick != getActionTick() || player.world.getBlockState(ignitePos).getBlock() != Blocks.FIRE) {
+			if (tick != getActionTick(mc, world, player) || player.world.getBlockState(ignitePos).getBlock() != Blocks.FIRE) {
 				world.playSound(pos.xCoord, pos.yCoord, pos.zCoord, SoundEvents.ITEM_FLINTANDSTEEL_USE, SoundCategory.BLOCKS, 1, 0.8F + world.rand.nextFloat() * 0.4F, false);
 			}
 		}

@@ -26,8 +26,11 @@ import com.pau101.auginter.client.interaction.math.MatrixStack;
 import com.pau101.auginter.client.interaction.math.Mth;
 import com.pau101.auginter.client.interaction.type.InteractionBucketDrain;
 import com.pau101.auginter.client.interaction.type.InteractionBucketFill;
+import com.pau101.auginter.client.interaction.type.InteractionCauldron;
+import com.pau101.auginter.client.interaction.type.InteractionFireCharge;
 import com.pau101.auginter.client.interaction.type.InteractionFlintAndSteel;
 import com.pau101.auginter.client.interaction.type.InteractionShears;
+import com.pau101.auginter.client.interaction.type.InteractionSpawnEgg;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
@@ -102,6 +105,9 @@ public final class InteractionRenderer {
 		register(InteractionType.BLOCK, new InteractionFlintAndSteel());
 		register(InteractionType.USE, new InteractionBucketFill());
 		register(InteractionType.USE, new InteractionBucketDrain());
+		register(InteractionType.BLOCK, new InteractionCauldron());
+		register(InteractionType.BLOCK, new InteractionFireCharge());
+		register(InteractionType.BLOCK, new InteractionSpawnEgg());
 	}
 
 	private void register(InteractionType type, Interaction interaction) {
@@ -173,14 +179,13 @@ public final class InteractionRenderer {
 		}
 		if (result != null) {
 			ItemStack stack = player.getHeldItem(hand);
-			BlockPos pos = mouseOver.getBlockPos();
-			if (mouseOver.typeOfHit == RayTraceResult.Type.BLOCK && pos != null && result.allowBlockActivation(world, pos, world.getBlockState(pos))) {
+			if (mouseOver.getBlockPos() != null && result.allowBlockActivation()) {
 				boolean act = blockImplementsOnActivated.getUnchecked(mc.world.getBlockState(mouseOver.getBlockPos()).getBlock());
 				if (act && (!player.isSneaking() || !stack.getItem().doesSneakBypassUse(stack, world, mouseOver.getBlockPos(), player))) {
 					return false;
 				}
 			}	
-			start(hand, result.create(world, player, stack, hand == EnumHand.OFF_HAND ? -1 : player.inventory.currentItem, hand, mouseOver));
+			start(hand, result.createAnimation(world, player, stack, hand == EnumHand.OFF_HAND ? -1 : player.inventory.currentItem, hand, mouseOver));
 			return true;
 		}
 		return false;
@@ -268,7 +273,7 @@ public final class InteractionRenderer {
 		}
 		ItemStack heldStack = player.getHeldItem(anim.getHand());
 		float equip, renderEquip;
-		if (anim.doItemsMatch(stack, heldStack)) {
+		if (anim.getHand() == EnumHand.MAIN_HAND && anim.getSlot() == player.inventory.currentItem && heldStack.func_190926_b() || anim.doItemsMatch(stack, heldStack)) {
 			equip = 1 - anim.getTransform(delta);
 			renderEquip = 0;
 		} else {

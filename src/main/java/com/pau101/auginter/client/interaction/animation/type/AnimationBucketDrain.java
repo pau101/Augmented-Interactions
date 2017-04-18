@@ -1,10 +1,10 @@
 package com.pau101.auginter.client.interaction.animation.type;
 
 import java.util.Random;
+import java.util.function.Predicate;
 
 import com.pau101.auginter.client.interaction.action.Action;
 import com.pau101.auginter.client.interaction.animation.AnimationDurated;
-import com.pau101.auginter.client.interaction.item.ItemPredicate;
 import com.pau101.auginter.client.interaction.math.MatrixStack;
 import com.pau101.auginter.client.interaction.math.Mth;
 
@@ -23,13 +23,13 @@ import net.minecraft.world.World;
 public abstract class AnimationBucketDrain<D> extends AnimationDurated<D> {
 	private final BlockPos fluidPos;
 
-	public AnimationBucketDrain(ItemStack stack, int actionBarSlot, EnumHand hand, RayTraceResult mouseOver, ItemPredicate itemPredicate, Action<D> action, BlockPos fluidPos) {
+	public AnimationBucketDrain(ItemStack stack, int actionBarSlot, EnumHand hand, RayTraceResult mouseOver, Predicate<ItemStack> itemPredicate, Action<D> action, BlockPos fluidPos) {
 		super(stack, actionBarSlot, hand, mouseOver, itemPredicate, action);
 		this.fluidPos = fluidPos;
 	}
 
 	@Override
-	protected int getActionTick() {
+	protected int getActionTick(Minecraft mc, World world, EntityPlayer player) {
 		return getDuration() / 2;
 	}
 

@@ -1,6 +1,7 @@
 package com.pau101.auginter.client.interaction.animation;
 
-import com.pau101.auginter.client.interaction.item.ItemPredicate;
+import java.util.function.Predicate;
+
 import com.pau101.auginter.client.interaction.math.MatrixStack;
 import com.pau101.auginter.client.interaction.math.Mth;
 
@@ -22,13 +23,13 @@ public abstract class Animation {
 
 	private final RayTraceResult mouseOver;
 
-	private final ItemPredicate itemPredicate;
+	private final Predicate<ItemStack> itemPredicate;
 
 	private int prevTransform;
 
 	private int transform;
 
-	public Animation(ItemStack stack, int slot, EnumHand hand, RayTraceResult mouseOver, ItemPredicate itemPredicate) {
+	public Animation(ItemStack stack, int slot, EnumHand hand, RayTraceResult mouseOver, Predicate<ItemStack> itemPredicate) {
 		this.stack = stack.copy();
 		this.slot = slot;
 		this.hand = hand;

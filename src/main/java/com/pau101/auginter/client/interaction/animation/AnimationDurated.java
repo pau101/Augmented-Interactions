@@ -1,7 +1,8 @@
 package com.pau101.auginter.client.interaction.animation;
 
+import java.util.function.Predicate;
+
 import com.pau101.auginter.client.interaction.action.Action;
-import com.pau101.auginter.client.interaction.item.ItemPredicate;
 import com.pau101.auginter.client.interaction.math.Mth;
 
 import net.minecraft.client.Minecraft;
@@ -20,14 +21,14 @@ public abstract class AnimationDurated<D> extends Animation {
 
 	private UseState state = UseState.WAITING;
 
-	public AnimationDurated(ItemStack stack, int actionBarSlot, EnumHand hand, RayTraceResult mouseOver, ItemPredicate itemPredicate, Action<D> action) {
+	public AnimationDurated(ItemStack stack, int actionBarSlot, EnumHand hand, RayTraceResult mouseOver, Predicate<ItemStack> itemPredicate, Action<D> action) {
 		super(stack, actionBarSlot, hand, mouseOver, itemPredicate);
 		this.action = action;
 	}
 
 	protected abstract D getActionData();
 
-	protected abstract int getActionTick();
+	protected abstract int getActionTick(Minecraft mc, World world, EntityPlayer player);
 
 	protected abstract int getDuration();
 
@@ -37,8 +38,12 @@ public abstract class AnimationDurated<D> extends Animation {
 	}
 
 	@Override
-	public boolean isDone(EntityPlayer player, ItemStack stack) {
+	public boolean isDone(EntityPlayer player, ItemStack stack) { 
 		return super.isDone(player, stack) || tick >= getDuration();
+	}
+
+	protected boolean shouldReverseTransform() {
+		return true;
 	}
 
 	protected final UseState getUseState() {
@@ -67,7 +72,7 @@ public abstract class AnimationDurated<D> extends Animation {
 		int duration = getDuration(), tDuration = getTransformDuration();
 		if (tick < duration) {
 			tick++;
-			if (tick == getActionTick()) {
+			if (tick == getActionTick(mc, world, player)) {
 				if (action.perform(mc, getActionData())) {
 					state = UseState.USE_SUCCEEDED;	
 					onActionSuccess(mc, world, player, stack);
@@ -75,14 +80,10 @@ public abstract class AnimationDurated<D> extends Animation {
 					state = UseState.USE_FAILED;
 				}
 			}
-			if (duration - tDuration > tDuration && tick >= duration - tDuration && getTransform() > 0) {
+			if (shouldReverseTransform() && duration - tDuration > tDuration && tick >= duration - tDuration && getTransform() > 0) {
 				decrementTransform();
 			}
 		}
-		/*if (tick == duration) {
-			tick = 0;
-			transform = 0;
-		}*/
 	}
 
 	protected enum UseState {

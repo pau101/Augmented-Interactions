@@ -1,5 +1,6 @@
 package com.pau101.auginter.client.interaction.type;
 
+import com.pau101.auginter.client.interaction.AnimationSupplier;
 import com.pau101.auginter.client.interaction.InitiationResult;
 import com.pau101.auginter.client.interaction.Interaction;
 import com.pau101.auginter.client.interaction.animation.Animation;
@@ -13,7 +14,7 @@ import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.world.World;
 
-public class InteractionFlintAndSteel implements Interaction<Void> {
+public final class InteractionFlintAndSteel implements Interaction, AnimationSupplier<Void> {
 	private final ItemPredicate flintAndSteel = s -> s.getItem() == Items.FLINT_AND_STEEL;
 
 	@Override

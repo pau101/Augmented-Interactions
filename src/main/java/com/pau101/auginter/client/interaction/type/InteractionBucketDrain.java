@@ -1,5 +1,6 @@
 package com.pau101.auginter.client.interaction.type;
 
+import com.pau101.auginter.client.interaction.AnimationSupplier;
 import com.pau101.auginter.client.interaction.InitiationResult;
 import com.pau101.auginter.client.interaction.Interaction;
 import com.pau101.auginter.client.interaction.action.ActionUse;
@@ -19,15 +20,15 @@ import net.minecraft.world.World;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.FluidUtil;
 
-public class InteractionBucketDrain implements Interaction<BlockPos> {
+public final class InteractionBucketDrain implements Interaction, AnimationSupplier<BlockPos> {
 	@Override
 	public InitiationResult<BlockPos> applies(World world, EntityPlayer player, ItemStack stack, int slot, EnumHand hand, RayTraceResult mouseOver) {
 		if (!ItemPredicateFluidHandler.INSTANCE.test(stack)) {
-			return InitiationResult.fail(this);
+			return InitiationResult.fail();
 		}
 		FluidStack fs = FluidUtil.getFluidContained(stack);
 		if (fs == null || fs.amount == 0) {
-			return InitiationResult.fail(this);
+			return InitiationResult.fail();
 		}
 		RayTraceResult result = Mth.rayTraceBlocks(world, player, false);
 		if (result != null && result.typeOfHit == RayTraceResult.Type.BLOCK) {
@@ -39,7 +40,7 @@ public class InteractionBucketDrain implements Interaction<BlockPos> {
 				return InitiationResult.success(this, pos);
 			}
 		}
-		return InitiationResult.fail(this);
+		return InitiationResult.fail();
 	}
 
 	@Override

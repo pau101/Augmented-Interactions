@@ -1,9 +1,9 @@
 package com.pau101.auginter.client.interaction.animation.type;
 
+import java.util.function.Predicate;
+
 import com.pau101.auginter.client.interaction.action.ActionEntity;
-import com.pau101.auginter.client.interaction.action.ActionEntity.Data;
 import com.pau101.auginter.client.interaction.animation.AnimationDurated;
-import com.pau101.auginter.client.interaction.item.ItemPredicate;
 import com.pau101.auginter.client.interaction.math.MatrixStack;
 import com.pau101.auginter.client.interaction.math.Mth;
 
@@ -31,7 +31,7 @@ public final class AnimationShears extends AnimationDurated<ActionEntity.Data> {
 
 	private static final float LENGTH = 0.85F;
 
-	public AnimationShears(ItemStack stack, int actionBarSlot, EnumHand hand, RayTraceResult mouseOver, ItemPredicate itemPredicate) {
+	public AnimationShears(ItemStack stack, int actionBarSlot, EnumHand hand, RayTraceResult mouseOver, Predicate<ItemStack> itemPredicate) {
 		super(stack, actionBarSlot, hand, mouseOver, itemPredicate, new ActionEntity());
 	}
 
@@ -41,7 +41,7 @@ public final class AnimationShears extends AnimationDurated<ActionEntity.Data> {
 	}
 
 	@Override
-	protected int getActionTick() {
+	protected int getActionTick(Minecraft mc, World world, EntityPlayer player) {
 		return getDuration() - getTransformDuration();
 	}
 
