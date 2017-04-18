@@ -80,8 +80,12 @@ public abstract class Animation {
 		return transform < getTransformDuration();
 	}
 
-	public boolean isDone(EntityPlayer player, ItemStack stack) {
+	public boolean isDone(Minecraft mc, World world, EntityPlayer player, ItemStack stack) {
 		return !itemPredicate.test(stack);
+	}
+
+	public boolean isVisible() {
+		return true;
 	}
 
 	public void updatePrev() {

@@ -51,9 +51,10 @@ public abstract class AnimationSpawnEgg<D> extends AnimationConsumed<D> {
 	public void transform(MatrixStack matrix, Minecraft mc, World world, EntityPlayer player, float yaw, boolean isLeft, float delta) {
 		untranslatePlayer(matrix, player, delta);
 		final float scale = 0.75F;
+		final float halfItem = scale * 0.5F;
 		float tick = getTick(delta);
 		float percent = tick / getDuration();
-		matrix.translate(pos.xCoord, pos.yCoord + scale * 0.5F, pos.zCoord);
+		matrix.translate(pos.xCoord, pos.yCoord + halfItem, pos.zCoord);
 		int dropTickEnd = getDuration() * 4 / 10;
 		int shakeTickEnd = dropTickEnd + getDuration() * 6 / 10;
 		if (tick < dropTickEnd) {
@@ -64,10 +65,10 @@ public abstract class AnimationSpawnEgg<D> extends AnimationConsumed<D> {
 		int dropTickMid = dropTickEnd / 2;
 		if (tick >= dropTickMid && tick < shakeTickEnd) {
 			float shakeTime = (tick - dropTickMid) / (shakeTickEnd - dropTickMid);
-			matrix.translate(0, -scale * 0.5F, 0);
+			matrix.translate(0, -halfItem, 0);
 			float amount = ((MathHelper.cos(shakeTime * Mth.PI) + 1) / 2);
 			matrix.rotate(MathHelper.sin(shakeTime * Mth.TAU * 2) * amount * 20, 0, 0, 1);
-			matrix.translate(0, scale * 0.5F, 0);
+			matrix.translate(0, halfItem, 0);
 		}
 		matrix.rotate(Mth.lerp(player.prevRotationPitch, player.rotationPitch, delta) / 2, 1, 0, 0);
 		matrix.rotate(180, 0, 1, 0);

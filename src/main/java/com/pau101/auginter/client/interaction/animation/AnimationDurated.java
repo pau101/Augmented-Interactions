@@ -32,14 +32,23 @@ public abstract class AnimationDurated<D> extends Animation {
 
 	protected abstract int getDuration();
 
+	protected int getPauseDuration(Minecraft mc, World world, EntityPlayer player) {
+		return 0;
+	}
+
 	@Override
 	protected boolean shouldTransform() {
 		return super.shouldTransform() && tick < getTransformDuration();
 	}
 
 	@Override
-	public boolean isDone(EntityPlayer player, ItemStack stack) { 
-		return super.isDone(player, stack) || tick >= getDuration();
+	public boolean isDone(Minecraft mc, World world, EntityPlayer player, ItemStack stack) { 
+		return super.isDone(mc, world, player, stack) || tick >= getDuration() + getPauseDuration(mc, world, player);
+	}
+
+	@Override
+	public boolean isVisible() {
+		return tick <= getDuration();
 	}
 
 	protected boolean shouldReverseTransform() {
@@ -70,7 +79,7 @@ public abstract class AnimationDurated<D> extends Animation {
 	public void update(Minecraft mc, World world, EntityPlayer player, ItemStack stack) {
 		super.update(mc, world, player, stack);
 		int duration = getDuration(), tDuration = getTransformDuration();
-		if (tick < duration) {
+		if (tick < duration + getPauseDuration(mc, world, player)) {
 			tick++;
 			if (tick == getActionTick(mc, world, player)) {
 				if (action.perform(mc, getActionData())) {

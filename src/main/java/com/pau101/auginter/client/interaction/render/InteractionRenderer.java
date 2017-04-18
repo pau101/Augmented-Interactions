@@ -27,6 +27,7 @@ import com.pau101.auginter.client.interaction.math.Mth;
 import com.pau101.auginter.client.interaction.type.InteractionBucketDrain;
 import com.pau101.auginter.client.interaction.type.InteractionBucketFill;
 import com.pau101.auginter.client.interaction.type.InteractionCauldron;
+import com.pau101.auginter.client.interaction.type.InteractionDye;
 import com.pau101.auginter.client.interaction.type.InteractionFireCharge;
 import com.pau101.auginter.client.interaction.type.InteractionFlintAndSteel;
 import com.pau101.auginter.client.interaction.type.InteractionShears;
@@ -108,6 +109,7 @@ public final class InteractionRenderer {
 		register(InteractionType.BLOCK, new InteractionCauldron());
 		register(InteractionType.BLOCK, new InteractionFireCharge());
 		register(InteractionType.BLOCK, new InteractionSpawnEgg());
+		register(InteractionType.ENTITY, new InteractionDye());
 	}
 
 	private void register(InteractionType type, Interaction interaction) {
@@ -227,7 +229,7 @@ public final class InteractionRenderer {
 			Animation anim = anims.next();
 			EnumHand hand = anim.getHand();
 			anim.update(mc, world, player, player.getHeldItem(hand));
-			if (anim.isDone(player, hand == EnumHand.MAIN_HAND ? main.func_190926_b() ? player.getHeldItem(hand) : main : off.func_190926_b() ? player.getHeldItem(hand) : off)) {
+			if (anim.isDone(mc, world, player, hand == EnumHand.MAIN_HAND ? main.func_190926_b() ? player.getHeldItem(hand) : main : off.func_190926_b() ? player.getHeldItem(hand) : off)) {
 				anims.remove();
 			}
 		}
@@ -248,7 +250,9 @@ public final class InteractionRenderer {
 			GlStateManager.color(1, 1, 1);
 			ItemRenderer renderer = mc.getItemRenderer();
 			for (Animation anim : animations.values()) {
-				render(world, player, renderer, anim, delta);
+				if (anim.isVisible()) {
+					render(world, player, renderer, anim, delta);	
+				}
 			}
 			RenderHelper.disableStandardItemLighting();
 		}

@@ -17,8 +17,13 @@ public abstract class AnimationConsumed<D> extends AnimationDurated<D> {
 	}
 
 	@Override
+	public int getPauseDuration(Minecraft mc, World world, EntityPlayer player) {
+		return player.capabilities.isCreativeMode ? 1 : 3;
+	}
+
+	@Override
 	protected final int getActionTick(Minecraft mc, World world, EntityPlayer player) {
-		return getDuration() - (player.capabilities.isCreativeMode ? 1 : 4);
+		return getDuration();
 	}
 
 	@Override
