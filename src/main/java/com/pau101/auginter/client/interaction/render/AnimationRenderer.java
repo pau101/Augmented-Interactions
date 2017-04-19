@@ -22,7 +22,6 @@ import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.client.particle.Particle;
-import net.minecraft.client.particle.ParticleManager;
 import net.minecraft.client.renderer.ActiveRenderInfo;
 import net.minecraft.client.renderer.EntityRenderer;
 import net.minecraft.client.renderer.GlStateManager;
@@ -49,7 +48,6 @@ import net.minecraftforge.client.model.IPerspectiveAwareModel;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
-import net.minecraftforge.fml.relauncher.ReflectionHelper;
 
 public final class AnimationRenderer {
 	private static final Matrix4d FLIP_X;
@@ -137,8 +135,7 @@ public final class AnimationRenderer {
 	}
 
 	private void injectRenderHook() {
-		ArrayDeque<Particle>[][] fxLayers = ReflectionHelper.getPrivateValue(ParticleManager.class, mc.effectRenderer, "fxLayers");
-		ArrayDeque<Particle> layer = fxLayers[renderHook.getFXLayer()][0];
+		ArrayDeque<Particle> layer = mc.effectRenderer.fxLayers[renderHook.getFXLayer()][0];
 		if (!layer.contains(renderHook)) {
 			layer.addFirst(renderHook);
 		}
