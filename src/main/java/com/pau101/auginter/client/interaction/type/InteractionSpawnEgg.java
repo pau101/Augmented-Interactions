@@ -2,6 +2,7 @@ package com.pau101.auginter.client.interaction.type;
 
 import java.util.List;
 
+import com.google.common.collect.ImmutableList;
 import com.pau101.auginter.client.interaction.AnimationSupplier;
 import com.pau101.auginter.client.interaction.InitiationResult;
 import com.pau101.auginter.client.interaction.Interaction;
@@ -39,6 +40,16 @@ public final class InteractionSpawnEgg implements Interaction, AnimationSupplier
 			return InitiationResult.success(this, spawnPos);
 		}
 		return InitiationResult.fail();
+	}
+
+	@Override
+	public ImmutableList<AnimationSupplier<?>> getAnimationSuppliers() {
+		return ImmutableList.of(this);
+	}
+
+	@Override
+	public String getName() {
+		return "Place Spawn Egg";
 	}
 
 	@Override

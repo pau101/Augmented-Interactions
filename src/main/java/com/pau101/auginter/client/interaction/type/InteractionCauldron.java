@@ -2,10 +2,12 @@ package com.pau101.auginter.client.interaction.type;
 
 import java.util.function.Predicate;
 
+import com.google.common.collect.ImmutableList;
 import com.pau101.auginter.client.interaction.AnimationSupplier;
 import com.pau101.auginter.client.interaction.InitiationResult;
 import com.pau101.auginter.client.interaction.Interaction;
 import com.pau101.auginter.client.interaction.action.ActionBlock;
+import com.pau101.auginter.client.interaction.animation.Animation;
 import com.pau101.auginter.client.interaction.animation.type.AnimationBottleDrain;
 import com.pau101.auginter.client.interaction.animation.type.AnimationBottleFill;
 import com.pau101.auginter.client.interaction.animation.type.AnimationBucketDrain;
@@ -44,34 +46,74 @@ public final class InteractionCauldron implements Interaction {
 
 	private final Predicate<ItemStack> coloredLeatherArmor = leatherArmor.and(s -> ((ItemArmor) s.getItem()).hasColor(s));
 
-	private final AnimationSupplier<Void> bucketDrain = (world, player, stack, actionBarSlot, hand, mouseOver, data) -> {
-		return new AnimationBucketDrain<ActionBlock.Data>(stack, actionBarSlot, hand, mouseOver, bucketOrWater, new ActionBlock(), mouseOver.getBlockPos()) {
-			@Override
-			protected ActionBlock.Data getActionData() {
-				return new ActionBlock.Data(getMouseOver(), getStack(), getHand());
-			}
-		};
+	private final AnimationSupplier<Void> bucketDrain = new AnimationSupplier<Void>() {
+		@Override
+		public String getName() {
+			return "Drain Bucket Into Cauldron";
+		}
+
+		@Override
+		public Animation create(World world, EntityPlayer player, ItemStack stack, int actionBarSlot, EnumHand hand, RayTraceResult mouseOver, Void data) {
+			return new AnimationBucketDrain<ActionBlock.Data>(stack, actionBarSlot, hand, mouseOver, bucketOrWater, new ActionBlock(), mouseOver.getBlockPos()) {
+				@Override
+				protected ActionBlock.Data getActionData() {
+					return new ActionBlock.Data(getMouseOver(), getStack(), getHand());
+				}
+			};
+		}
 	};
 
-	private final AnimationSupplier<Void> bucketFill = (world, player, stack, actionBarSlot, hand, mouseOver, data) -> {
-		return new AnimationBucketFill<ActionBlock.Data>(stack, actionBarSlot, hand, mouseOver, bucketOrWater, new ActionBlock()) {
-			@Override
-			protected ActionBlock.Data getActionData() {
-				return new ActionBlock.Data(getMouseOver(), getStack(), getHand());
-			}
-		};
+	private final AnimationSupplier<Void> bucketFill = new AnimationSupplier<Void>() {
+		@Override
+		public String getName() {
+			return "Fill Bucket From Cauldron";
+		}
+
+		@Override
+		public Animation create(World world, EntityPlayer player, ItemStack stack, int actionBarSlot, EnumHand hand, RayTraceResult mouseOver, Void data) {
+			return new AnimationBucketFill<ActionBlock.Data>(stack, actionBarSlot, hand, mouseOver, bucketOrWater, new ActionBlock()) {
+				@Override
+				protected ActionBlock.Data getActionData() {
+					return new ActionBlock.Data(getMouseOver(), getStack(), getHand());
+				}
+			};
+		}
 	};
 
-	private final AnimationSupplier<Float> bottleDrain = (world, player, stack, actionBarSlot, hand, mouseOver, level) -> {
-		return new AnimationBottleDrain(stack, actionBarSlot, hand, mouseOver, bottleOrWater, level);
+	private final AnimationSupplier<Float> bottleDrain = new AnimationSupplier<Float>() {
+		@Override
+		public String getName() {
+			return "Drain Bottle Into Cauldron";
+		}
+
+		@Override
+		public Animation create(World world, EntityPlayer player, ItemStack stack, int actionBarSlot, EnumHand hand, RayTraceResult mouseOver, Float level) {
+			return new AnimationBottleDrain(stack, actionBarSlot, hand, mouseOver, bottleOrWater, level);
+		}
 	};
 
-	private final AnimationSupplier<Float> bottleFill = (world, player, stack, actionBarSlot, hand, mouseOver, level) -> {
-		return new AnimationBottleFill(stack, actionBarSlot, hand, mouseOver, bottleOrWater, level);
+	private final AnimationSupplier<Float> bottleFill = new AnimationSupplier<Float>() {
+		@Override
+		public String getName() {
+			return "Fill Bottle From Cauldron";
+		}
+
+		@Override
+		public Animation create(World world, EntityPlayer player, ItemStack stack, int actionBarSlot, EnumHand hand, RayTraceResult mouseOver, Float level) {
+			return new AnimationBottleFill(stack, actionBarSlot, hand, mouseOver, bottleOrWater, level);
+		}
 	};
 
-	private final AnimationSupplier<Void> cleanLeatherArmor = (world, player, stack, actionBarSlot, hand, mouseOver, data) -> {
-		return new AnimationCleanLeatherArmor(stack, actionBarSlot, hand, mouseOver, leatherArmor);
+	private final AnimationSupplier<Void> cleanLeatherArmor = new AnimationSupplier<Void>() {
+		@Override
+		public String getName() {
+			return "Clean Leather Armor In Cauldron";
+		}
+
+		@Override
+		public Animation create(World world, EntityPlayer player, ItemStack stack, int actionBarSlot, EnumHand hand, RayTraceResult mouseOver, Void data) {
+			return new AnimationCleanLeatherArmor(stack, actionBarSlot, hand, mouseOver, leatherArmor);
+		}
 	};
 
 	@Override
@@ -103,6 +145,11 @@ public final class InteractionCauldron implements Interaction {
 			// TODO: clean banner
 		}
 		return InitiationResult.fail();
+	}
+
+	@Override
+	public ImmutableList<AnimationSupplier<?>> getAnimationSuppliers() {
+		return ImmutableList.of(bucketDrain, bucketFill, bottleFill, bottleDrain, cleanLeatherArmor);
 	}
 
 	private boolean isCauldron(IBlockState state) {

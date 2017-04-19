@@ -1,5 +1,6 @@
 package com.pau101.auginter.client.interaction.type;
 
+import com.google.common.collect.ImmutableList;
 import com.pau101.auginter.client.interaction.AnimationSupplier;
 import com.pau101.auginter.client.interaction.InitiationResult;
 import com.pau101.auginter.client.interaction.Interaction;
@@ -41,6 +42,16 @@ public final class InteractionBucketDrain implements Interaction, AnimationSuppl
 			}
 		}
 		return InitiationResult.fail();
+	}
+
+	@Override
+	public ImmutableList<AnimationSupplier<?>> getAnimationSuppliers() {
+		return ImmutableList.of(this);
+	}
+
+	@Override
+	public String getName() {
+		return "Drain Bucket";
 	}
 
 	@Override

@@ -44,6 +44,10 @@ public final class InitiationResult<D> {
 		return allowBlockActivation;
 	}
 
+	public boolean isEnabled(AnimationWarden warden) {
+		return warden.isEnabled(animation);
+	}
+
 	public Animation createAnimation(World world, EntityPlayer player, ItemStack stack, int slot, EnumHand hand, RayTraceResult result) {
 		if (animation == null) {
 			throw new IllegalStateException("No animation supplier for failure");

@@ -1,6 +1,5 @@
 package com.pau101.auginter.client.interaction.render;
 
-import java.lang.reflect.Method;
 import java.util.ArrayDeque;
 import java.util.Iterator;
 
@@ -10,30 +9,14 @@ import javax.vecmath.Matrix4f;
 import org.apache.commons.lang3.tuple.Pair;
 import org.lwjgl.opengl.GL11;
 
-import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.CacheLoader;
-import com.google.common.cache.LoadingCache;
 import com.google.common.collect.HashMultimap;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Multimap;
-import com.pau101.auginter.client.interaction.InitiationResult;
-import com.pau101.auginter.client.interaction.Interaction;
-import com.pau101.auginter.client.interaction.InteractionType;
 import com.pau101.auginter.client.interaction.animation.Animation;
 import com.pau101.auginter.client.interaction.math.GLMatrix;
 import com.pau101.auginter.client.interaction.math.Matrix;
 import com.pau101.auginter.client.interaction.math.MatrixStack;
 import com.pau101.auginter.client.interaction.math.Mth;
-import com.pau101.auginter.client.interaction.type.InteractionBucketDrain;
-import com.pau101.auginter.client.interaction.type.InteractionBucketFill;
-import com.pau101.auginter.client.interaction.type.InteractionCauldron;
-import com.pau101.auginter.client.interaction.type.InteractionDye;
-import com.pau101.auginter.client.interaction.type.InteractionFireCharge;
-import com.pau101.auginter.client.interaction.type.InteractionFlintAndSteel;
-import com.pau101.auginter.client.interaction.type.InteractionShears;
-import com.pau101.auginter.client.interaction.type.InteractionSpawnEgg;
 
-import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
@@ -55,12 +38,10 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.EnumHandSide;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.world.World;
 import net.minecraftforge.client.ForgeHooksClient;
 import net.minecraftforge.client.event.RenderSpecificHandEvent;
@@ -70,7 +51,7 @@ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
 import net.minecraftforge.fml.relauncher.ReflectionHelper;
 
-public final class InteractionRenderer {
+public final class AnimationRenderer {
 	private static final Matrix4d FLIP_X;
 
 	static {
@@ -81,48 +62,7 @@ public final class InteractionRenderer {
 
 	private final Minecraft mc = Minecraft.getMinecraft();
 
-	private final Multimap<InteractionType, Interaction> interactionRegistry = HashMultimap.create();
-
 	private final Multimap<EnumHand, Animation> animations = HashMultimap.create();
-
-	private final LoadingCache<Block, Boolean> blockImplementsOnActivated = CacheBuilder.newBuilder()
-		.build(CacheLoader.from(block -> {
-			for (Class<?> cls = block.getClass(); cls != null && cls != Block.class; cls = cls.getSuperclass()) {
-				if (getOnBlockActivated(cls, "func_180639_a") != null || getOnBlockActivated(cls, "onBlockActivated") != null) {
-					return true;
-				}
-			}
-			return false;
-		}));
-
-	private final ImmutableMap<RayTraceResult.Type, InteractionType> raytraceInteractionTypeLookup = ImmutableMap.<RayTraceResult.Type, InteractionType>builder()
-		.put(RayTraceResult.Type.BLOCK, InteractionType.BLOCK)
-		.put(RayTraceResult.Type.ENTITY, InteractionType.ENTITY)
-		.build();
-
-	public InteractionRenderer() {
-		MinecraftForge.EVENT_BUS.register(this);
-		register(InteractionType.ENTITY, new InteractionShears());
-		register(InteractionType.BLOCK, new InteractionFlintAndSteel());
-		register(InteractionType.USE, new InteractionBucketFill());
-		register(InteractionType.USE, new InteractionBucketDrain());
-		register(InteractionType.BLOCK, new InteractionCauldron());
-		register(InteractionType.BLOCK, new InteractionFireCharge());
-		register(InteractionType.BLOCK, new InteractionSpawnEgg());
-		register(InteractionType.ENTITY, new InteractionDye());
-	}
-
-	private void register(InteractionType type, Interaction interaction) {
-		interactionRegistry.put(type, interaction);
-	}
-
-	private boolean hasInteractions() {
-		return animations.size() > 0;
-	}
-
-	public void start(EnumHand hand, Animation animation) {
-		animations.put(hand, animation);
-	}
 
 	// RenderWorldLastEvent is a terrible place to render things so we do this
 	private final Particle renderHook = new Particle(null, 0, 0, 0, 0, 0, 0) {
@@ -146,6 +86,14 @@ public final class InteractionRenderer {
 		}
 	};
 
+	public AnimationRenderer() {
+		MinecraftForge.EVENT_BUS.register(this);
+	}
+
+	public void start(EnumHand hand, Animation animation) {
+		animations.put(hand, animation);
+	}
+
 	@SubscribeEvent
 	public void tick(TickEvent.ClientTickEvent event) {
 		EntityPlayer player = mc.player;
@@ -163,53 +111,6 @@ public final class InteractionRenderer {
 	public void renderSpecificHand(RenderSpecificHandEvent event) {
 		if (animations.get(event.getHand()).size() > 0 && shouldRender(mc.player)) {
 			event.setCanceled(true);
-		}
-	}
-
-	public boolean rightClickMouse(EnumHand hand) {
-		World world = mc.world;
-		EntityPlayer player = mc.player;
-		RayTraceResult mouseOver = mc.objectMouseOver;
-		InteractionType type = raytraceInteractionTypeLookup.get(mouseOver.typeOfHit);
-		InitiationResult<?> result = null;
-		if (type != null) {
-			result = getInteraction(world, player, hand, mouseOver, interactionRegistry.get(type));
-		}
-		if (result == null) {
-			type = InteractionType.USE;
-			result = getInteraction(world, player, hand, mouseOver, interactionRegistry.get(type));
-		}
-		if (result != null) {
-			ItemStack stack = player.getHeldItem(hand);
-			if (mouseOver.getBlockPos() != null && result.allowBlockActivation()) {
-				boolean act = blockImplementsOnActivated.getUnchecked(mc.world.getBlockState(mouseOver.getBlockPos()).getBlock());
-				if (act && (!player.isSneaking() || !stack.getItem().doesSneakBypassUse(stack, world, mouseOver.getBlockPos(), player))) {
-					return false;
-				}
-			}	
-			start(hand, result.createAnimation(world, player, stack, hand == EnumHand.OFF_HAND ? -1 : player.inventory.currentItem, hand, mouseOver));
-			return true;
-		}
-		return false;
-	}
-
-	private InitiationResult<?> getInteraction(World world, EntityPlayer player, EnumHand hand, RayTraceResult mouseOver, Iterable<Interaction> interactions) {
-		ItemStack stack = player.getHeldItem(hand);
-		int slot = hand == EnumHand.MAIN_HAND ? player.inventory.currentItem : -1;
-		for (Interaction interaction : interactions) {
-			InitiationResult<?> result = interaction.applies(world, player, stack, slot, hand, mouseOver);
-			if (result.getType() == InitiationResult.Type.SUCCESS) {
-				return result;
-			}
-		}
-		return null;
-	}
-
-	private void injectRenderHook() {
-		ArrayDeque<Particle>[][] fxLayers = ReflectionHelper.getPrivateValue(ParticleManager.class, mc.effectRenderer, "fxLayers");
-		ArrayDeque<Particle> layer = fxLayers[renderHook.getFXLayer()][0];
-		if (!layer.contains(renderHook)) {
-			layer.addFirst(renderHook);
 		}
 	}
 
@@ -235,13 +136,21 @@ public final class InteractionRenderer {
 		}
 	}
 
+	private void injectRenderHook() {
+		ArrayDeque<Particle>[][] fxLayers = ReflectionHelper.getPrivateValue(ParticleManager.class, mc.effectRenderer, "fxLayers");
+		ArrayDeque<Particle> layer = fxLayers[renderHook.getFXLayer()][0];
+		if (!layer.contains(renderHook)) {
+			layer.addFirst(renderHook);
+		}
+	}
+
 	private boolean shouldRender(EntityPlayer player) {
 		return player != null && player == mc.getRenderViewEntity() && mc.gameSettings.thirdPersonView == 0 && !mc.gameSettings.hideGUI && !player.isPlayerSleeping() && !mc.playerController.isSpectator();
 	}
 
 	private void render(float delta) {
 		EntityPlayerSP player = mc.player;
-		if (hasInteractions() && shouldRender(player)) {
+		if (animations.size() > 0 && shouldRender(player)) {
 			World world = mc.world;
 			RenderHelper.enableStandardItemLighting();
 			// setLightmap
@@ -414,14 +323,6 @@ public final class InteractionRenderer {
 		GlStateManager.matrixMode(GL11.GL_MODELVIEW);
 		GlStateManager.loadIdentity();
 		Mth.multMatrix(modelView);
-	}
-
-	private static Method getOnBlockActivated(Class<?> cls, String name) {
-		try {
-			return cls.getDeclaredMethod(name, World.class, BlockPos.class, IBlockState.class, EntityPlayer.class, EnumHand.class, EnumFacing.class, float.class, float.class, float.class);
-		} catch (NoSuchMethodException | SecurityException e) {
-			return null;
-		}
 	}
 
 	@FunctionalInterface

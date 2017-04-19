@@ -1,5 +1,6 @@
 package com.pau101.auginter.client.interaction.type;
 
+import com.google.common.collect.ImmutableList;
 import com.pau101.auginter.client.interaction.AnimationSupplier;
 import com.pau101.auginter.client.interaction.InitiationResult;
 import com.pau101.auginter.client.interaction.Interaction;
@@ -20,6 +21,16 @@ public final class InteractionFlintAndSteel implements Interaction, AnimationSup
 	@Override
 	public InitiationResult<Void> applies(World world, EntityPlayer player, ItemStack stack, int slot, EnumHand hand, RayTraceResult mouseOver) {
 		return InitiationResult.result(this, flintAndSteel.test(stack));
+	}
+
+	@Override
+	public ImmutableList<AnimationSupplier<?>> getAnimationSuppliers() {
+		return ImmutableList.of(this);
+	}
+
+	@Override
+	public String getName() {
+		return "Strike Flint And Steel";
 	}
 
 	@Override

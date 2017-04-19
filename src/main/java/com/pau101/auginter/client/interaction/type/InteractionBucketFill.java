@@ -1,5 +1,6 @@
 package com.pau101.auginter.client.interaction.type;
 
+import com.google.common.collect.ImmutableList;
 import com.pau101.auginter.client.interaction.AnimationSupplier;
 import com.pau101.auginter.client.interaction.InitiationResult;
 import com.pau101.auginter.client.interaction.Interaction;
@@ -44,6 +45,16 @@ public final class InteractionBucketFill implements Interaction, AnimationSuppli
 	}
 
 	@Override
+	public ImmutableList<AnimationSupplier<?>> getAnimationSuppliers() {
+		return ImmutableList.of(this);
+	}
+
+	@Override
+	public String getName() {
+		return "Fill Bucket";
+	}
+
+	@Override
 	public Animation create(World world, EntityPlayer player, ItemStack stack, int actionBarSlot, EnumHand hand, RayTraceResult mouseOver, RayTraceResult fluidMouseOver) {
 		return new AnimationBucketFill<EnumHand>(stack, actionBarSlot, hand, fluidMouseOver, ItemPredicateFluidHandler.INSTANCE, new ActionUse()) {
 			@Override
@@ -52,5 +63,4 @@ public final class InteractionBucketFill implements Interaction, AnimationSuppli
 			}
 		};
 	}
-
 }

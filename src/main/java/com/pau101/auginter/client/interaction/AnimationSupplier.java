@@ -9,5 +9,7 @@ import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.world.World;
 
 public interface AnimationSupplier<T> {
+	String getName();
+
 	Animation create(World world, EntityPlayer player, ItemStack stack, int actionBarSlot, EnumHand hand, RayTraceResult mouseOver, T data);
 }
