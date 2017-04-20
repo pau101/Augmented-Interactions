@@ -23,6 +23,14 @@ minecraft {
 	makeObfSourceJar = false
 }
 
+jar {
+	manifest {
+		attributes "FMLCorePlugin": "com.pau101.auginter.client.asm.AugInterLoadingPlugin"
+		attributes "FMLCorePluginContainsFMLMod": "true"
+		attributes "FMLAT": "auginter_at.cfg"
+	}
+}
+
 processResources {
 	inputs.property "version", project.modVersion
 	inputs.property "mcversion", project.minecraft.version

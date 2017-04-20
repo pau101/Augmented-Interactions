@@ -29,11 +29,12 @@ public final class ClientProxy extends Proxy implements AnimationWarden {
 
 	@Override
 	public void init(File configFile) {
+		super.init(configFile);
 		skipAnimation = keyBinding("skipAnimation", KeyConflictContext.IN_GAME, Keyboard.KEY_X);
 		renderer = new AnimationRenderer();
 		handler = new InteractionHandler(renderer, this, skipAnimation);
 		config = new ClientConfigurator(new Configuration(configFile), handler);
-		config.updateConfig();
+		config.update();
 	}
 
 	@Override
@@ -44,6 +45,11 @@ public final class ClientProxy extends Proxy implements AnimationWarden {
 	@Override
 	public boolean rightClickMouse(EnumHand hand) {
 		return handler.rightClickMouse(hand);
+	}
+
+	@Override
+	public void setAllAnimationVisiblity(boolean value) {
+		config.setAllAnimationVisiblity(value);
 	}
 
 	@Override

@@ -22,16 +22,27 @@ public abstract class Configurator {
 	@SubscribeEvent
 	public void configChanged(ConfigChangedEvent.OnConfigChangedEvent event) {
 		if (AugmentedInteractions.ID.equals(event.getModID())) {
-			updateConfig();
+			update();
 		}
 	}
 
-	public final void updateConfig() {
+	public final void update() {
 		readConfig();
+		save();
+	}
+
+	protected final void sync() {
+		writeConfig();
+		save();
+	}
+
+	protected final void save() {
 		if (config.hasChanged()) {
 			config.save();
 		}
 	}
 
 	protected abstract void readConfig();
+
+	protected abstract void writeConfig();
 }

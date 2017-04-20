@@ -12,8 +12,9 @@ public class ServerProxy extends Proxy {
 	private ServerConfigurator config;
 
 	public void init(File configFile) {
+		super.init(configFile);
 		config = new ServerConfigurator(new Configuration(configFile));
-		config.updateConfig();
+		config.update();
 	}
 
 	@Override

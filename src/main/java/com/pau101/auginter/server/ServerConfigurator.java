@@ -11,4 +11,7 @@ public class ServerConfigurator extends Configurator {
 
 	@Override
 	protected void readConfig() {}
+
+	@Override
+	protected void writeConfig() {}
 }

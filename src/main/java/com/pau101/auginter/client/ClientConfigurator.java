@@ -28,6 +28,13 @@ public final class ClientConfigurator extends Configurator {
 		return animationActiveStates.getOrDefault(anim, true);
 	}
 
+	public void setAllAnimationVisiblity(boolean value) {
+		for (AnimationSupplier<?> anim : animationActiveStates.keySet()) {
+			animationActiveStates.put(anim, value);
+		}
+		sync();
+	}
+
 	@Override
 	public void readConfig() {
 		Configuration config = getConfig();
@@ -35,6 +42,19 @@ public final class ClientConfigurator extends Configurator {
 			for (AnimationSupplier<?> anim : interaction.getAnimationSuppliers()) {
 				boolean state = config.getBoolean(anim.getName(), ANIMATION_CAT, true, ANIMATION_DESC);
 				animationActiveStates.put(anim, state);
+			}
+		}
+	}
+
+	@Override
+	protected void writeConfig() {
+		Configuration config = getConfig();
+		for (Interaction interaction : interactionHandler.getInteractions()) {
+			for (AnimationSupplier<?> anim : interaction.getAnimationSuppliers()) {
+				String name = anim.getName();
+				if (config.hasKey(ANIMATION_CAT, name)) {
+					config.get(ANIMATION_CAT, name, true).set(isAnimationEnabled(anim));
+				}
 			}
 		}
 	}

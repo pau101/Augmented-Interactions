@@ -2,12 +2,15 @@ package com.pau101.auginter;
 
 import com.pau101.auginter.common.Configurator;
 import com.pau101.auginter.common.Proxy;
+import com.pau101.auginter.server.command.CommandAugInter;
 
 import net.minecraft.util.EnumHand;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventHandler;
 import net.minecraftforge.fml.common.SidedProxy;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
+import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
+import net.minecraftforge.fml.common.network.simpleimpl.SimpleNetworkWrapper;
 
 @Mod(
 	modid = AugmentedInteractions.ID,
@@ -15,7 +18,7 @@ import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 	version = AugmentedInteractions.VERSION,
 	guiFactory = "com.pau101.auginter.client.gui.AugInterGuiFactory"
 )
-public class AugmentedInteractions {
+public final class AugmentedInteractions {
 	public static final String ID = "auginter";
 
 	public static final String NAME = "Augmented Interactions";
@@ -33,11 +36,24 @@ public class AugmentedInteractions {
 		proxy.init(event.getSuggestedConfigurationFile());
 	}
 
+	@EventHandler
+	public void serverStarting(FMLServerStartingEvent event) {
+		event.registerServerCommand(new CommandAugInter());
+	}
+
 	public static boolean rightClickMouse(EnumHand hand) {
 		return proxy.rightClickMouse(hand);
 	}
 
 	public static Configurator getConfigurator() {
 		return proxy.getConfigurator();
+	}
+
+	public static SimpleNetworkWrapper getNetwork() {
+		return proxy.getNetwork();
+	}
+
+	public static void setAllAnimationVisibility(boolean value) {
+		proxy.setAllAnimationVisiblity(value);
 	}
 }
