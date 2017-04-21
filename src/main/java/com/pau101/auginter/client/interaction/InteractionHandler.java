@@ -103,7 +103,7 @@ public final class InteractionHandler {
 			ItemStack stack = player.getHeldItem(hand);
 			if (mouseOver.getBlockPos() != null && result.allowBlockActivation()) {
 				boolean act = blockImplementsOnActivated.getUnchecked(mc.world.getBlockState(mouseOver.getBlockPos()).getBlock());
-				if (act && (!player.isSneaking() || !stack.getItem().doesSneakBypassUse(stack, world, mouseOver.getBlockPos(), player))) {
+				if (act && (!player.isSneaking() || stack.getItem().doesSneakBypassUse(stack, world, mouseOver.getBlockPos(), player))) {
 					return false;
 				}
 			}
