@@ -36,9 +36,12 @@ public final class InteractionBucketFill implements Interaction, AnimationSuppli
 			BlockPos pos = result.getBlockPos();
 			if (world.getBlockState(pos).getMaterial().isLiquid()) {
 				IFluidHandler fluid = FluidUtil.getFluidHandler(world, pos, result.sideHit);
-				if (fluid.drain(Integer.MAX_VALUE, false).amount > 0) {
-					return InitiationResult.success(this, result);
-				}	
+				if (fluid != null) {
+					FluidStack fstack = fluid.drain(Integer.MAX_VALUE, false);
+					if (fstack != null && fstack.amount > 0) {
+						return InitiationResult.success(this, result);
+					}
+				}
 			}
 		}
 		return InitiationResult.fail();
