@@ -68,9 +68,9 @@ public final class AnimationShears extends AnimationDurated<ActionEntity.Data> {
 				entityYaw = entity.rotationYaw;
 			}
 			Vec3d pos = new Vec3d(cos * (WIDTH - 0.2F), 0, sin * (LENGTH - 0.2F)).rotateYaw((float) -Math.toRadians(entityYaw));
-			double x = entity.posX + pos.xCoord;
+			double x = entity.posX + pos.x;
 			double y = entity.posY + entity.height + elv;
-			double z = entity.posZ + pos.zCoord;
+			double z = entity.posZ + pos.z;
 			if (world.rand.nextBoolean()) {
 				IBlockState state = Blocks.WOOL.getDefaultState();
 				if (entity instanceof EntitySheep) {

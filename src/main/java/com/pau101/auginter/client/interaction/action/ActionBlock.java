@@ -15,10 +15,10 @@ public class ActionBlock implements Action<Data> {
 	public boolean perform(Minecraft mc, Data dat) {
 		BlockPos pos = dat.mouseOver.getBlockPos();
 		if (mc.world.getBlockState(pos).getMaterial() != Material.AIR) {
-			int count = dat.stack.func_190916_E();
+			int count = dat.stack.getCount();
 			EnumActionResult result = mc.playerController.processRightClickBlock(mc.player, mc.world, pos, dat.mouseOver.sideHit, dat.mouseOver.hitVec, dat.hand);
 			if (result == EnumActionResult.SUCCESS) {
-				if (!dat.stack.func_190926_b() && (dat.stack.func_190916_E() != count || mc.playerController.isInCreativeMode())) {
+				if (!dat.stack.isEmpty() && (dat.stack.getCount() != count || mc.playerController.isInCreativeMode())) {
 					mc.entityRenderer.itemRenderer.resetEquippedProgress(dat.hand);
 				}
 				return true;

@@ -4,8 +4,6 @@ import java.io.File;
 
 import com.pau101.auginter.common.Configurator;
 import com.pau101.auginter.common.Proxy;
-
-import net.minecraft.util.EnumHand;
 import net.minecraftforge.common.config.Configuration;
 
 public class ServerProxy extends Proxy {
@@ -20,9 +18,5 @@ public class ServerProxy extends Proxy {
 	@Override
 	public Configurator getConfigurator() {
 		return config;
-	}
-
-	public boolean rightClickMouse(EnumHand hand) {
-		return false;
 	}
 }

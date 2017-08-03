@@ -37,9 +37,9 @@ public abstract class AnimationSpawnEgg<D> extends AnimationConsumed<D> {
 		Random rng = world.rand;
 		int num = rng.nextInt(4) + 8;
 		while (num --> 0) {
-			double x = pos.xCoord + rng.nextDouble() * 0.5 - 0.25;
-			double y = pos.yCoord + rng.nextDouble() * 0.5 + 0.1;
-			double z = pos.zCoord + rng.nextDouble() * 0.5 - 0.25;
+			double x = pos.x + rng.nextDouble() * 0.5 - 0.25;
+			double y = pos.y + rng.nextDouble() * 0.5 + 0.1;
+			double z = pos.z + rng.nextDouble() * 0.5 - 0.25;
 			double mx = rng.nextDouble() * 0.22 - 0.11;
 			double my = rng.nextDouble() * 0.3;
 			double mz = rng.nextDouble() * 0.22 - 0.11;
@@ -54,7 +54,7 @@ public abstract class AnimationSpawnEgg<D> extends AnimationConsumed<D> {
 		final float halfItem = scale * 0.5F;
 		float tick = getTick(delta);
 		float percent = tick / getDuration();
-		matrix.translate(pos.xCoord, pos.yCoord + halfItem, pos.zCoord);
+		matrix.translate(pos.x, pos.y + halfItem, pos.z);
 		int dropTickEnd = getDuration() * 4 / 10;
 		int shakeTickEnd = dropTickEnd + getDuration() * 6 / 10;
 		if (tick < dropTickEnd) {

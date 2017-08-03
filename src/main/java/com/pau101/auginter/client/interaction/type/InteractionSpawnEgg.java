@@ -64,7 +64,7 @@ public final class InteractionSpawnEgg implements Interaction, AnimationSupplier
 
 	// ItemMonsterPlacer#func_190909_a
 	private static double getTop(World world, BlockPos pos) {
-		AxisAlignedBB bounds = new AxisAlignedBB(pos).addCoord(0, -1, 0);
+		AxisAlignedBB bounds = new AxisAlignedBB(pos).offset(0, -1, 0);
 		List<AxisAlignedBB> boxes = world.getCollisionBoxes(null, bounds);
 		if (boxes.isEmpty()) {
 			return 0;

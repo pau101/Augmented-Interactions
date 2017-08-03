@@ -40,7 +40,7 @@ public final class AnimationFireCharge extends AnimationConsumed<ActionBlock.Dat
 		untranslatePlayer(matrix, player, delta);
 		RayTraceResult mouseOver = getMouseOver();
 		Vec3d pos = mouseOver.hitVec;
-		matrix.translate(pos.xCoord, pos.yCoord, pos.zCoord);
+		matrix.translate(pos.x, pos.y, pos.z);
 		matrix.rotate(-yaw, 0, 1, 0);
 		matrix.rotate(Mth.lerp(player.prevRotationPitch, player.rotationPitch, delta), 1, 0, 0);
 		matrix.rotate(200, 0, 1, 0);

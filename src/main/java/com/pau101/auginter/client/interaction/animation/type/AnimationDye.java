@@ -51,12 +51,12 @@ public final class AnimationDye extends AnimationConsumed<ActionEntity.Data> {
 		Vec3d eye = new Vec3d(player.posX, player.posY + player.getEyeHeight(), player.posZ);
 		Vec3d vec = eye.subtract(sheep).normalize().scale(0.3);
 		while (num --> 0) {
-			double x = sheep.xCoord + rng.nextDouble() * 0.2 - 0.01;
-			double y = sheep.yCoord + rng.nextDouble() * 0.2 - 0.01;
-			double z = sheep.zCoord + rng.nextDouble() * 0.2 - 0.01;
-			double mx = vec.xCoord + rng.nextDouble() * 0.05 - 0.025;
-			double my = vec.yCoord + rng.nextDouble() * 0.05;
-			double mz = vec.zCoord + rng.nextDouble() * 0.05 - 0.025;
+			double x = sheep.x + rng.nextDouble() * 0.2 - 0.01;
+			double y = sheep.y + rng.nextDouble() * 0.2 - 0.01;
+			double z = sheep.z + rng.nextDouble() * 0.2 - 0.01;
+			double mx = vec.x + rng.nextDouble() * 0.05 - 0.025;
+			double my = vec.y + rng.nextDouble() * 0.05;
+			double mz = vec.z + rng.nextDouble() * 0.05 - 0.025;
 			world.spawnParticle(EnumParticleTypes.ITEM_CRACK, x, y, z, mx, my, mz, Item.getIdFromItem(getStack().getItem()), getStack().getMetadata());	
 		}
 	}
@@ -68,7 +68,7 @@ public final class AnimationDye extends AnimationConsumed<ActionEntity.Data> {
 		double y = Mth.lerp(entity.lastTickPosY, entity.posY, delta);
 		double z = Mth.lerp(entity.lastTickPosZ, entity.posZ, delta);
 		untranslatePlayer(matrix, player, delta);
-		matrix.translate(x + relativeHit.xCoord, y + relativeHit.yCoord, z + relativeHit.zCoord);
+		matrix.translate(x + relativeHit.x, y + relativeHit.y, z + relativeHit.z);
 		matrix.rotate(-yaw, 0, 1, 0);
 		matrix.rotate(Mth.lerp(player.prevRotationPitch, player.rotationPitch, delta), 1, 0, 0);
 		matrix.rotate(180, 0, 1, 0);

@@ -2,12 +2,8 @@ package com.pau101.auginter.client.interaction.render;
 
 import java.util.ArrayDeque;
 import java.util.Iterator;
-
 import javax.vecmath.Matrix4d;
 import javax.vecmath.Matrix4f;
-
-import org.apache.commons.lang3.tuple.Pair;
-import org.lwjgl.opengl.GL11;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
@@ -16,23 +12,20 @@ import com.pau101.auginter.client.interaction.math.GLMatrix;
 import com.pau101.auginter.client.interaction.math.Matrix;
 import com.pau101.auginter.client.interaction.math.MatrixStack;
 import com.pau101.auginter.client.interaction.math.Mth;
-
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.client.renderer.ActiveRenderInfo;
+import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.EntityRenderer;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.ItemRenderer;
 import net.minecraft.client.renderer.OpenGlHelper;
 import net.minecraft.client.renderer.RenderHelper;
-import net.minecraft.client.renderer.VertexBuffer;
 import net.minecraft.client.renderer.block.model.IBakedModel;
-import net.minecraft.client.renderer.block.model.ItemCameraTransforms;
 import net.minecraft.client.renderer.block.model.ItemCameraTransforms.TransformType;
-import net.minecraft.client.renderer.block.model.ItemTransformVec3f;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
@@ -44,10 +37,11 @@ import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
 import net.minecraftforge.client.ForgeHooksClient;
 import net.minecraftforge.client.event.RenderSpecificHandEvent;
-import net.minecraftforge.client.model.IPerspectiveAwareModel;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
+import org.apache.commons.lang3.tuple.Pair;
+import org.lwjgl.opengl.GL11;
 
 public final class AnimationRenderer {
 	private static final Matrix4d FLIP_X;
@@ -79,7 +73,7 @@ public final class AnimationRenderer {
 		public void setPosition(double x, double y, double z) {}
 
 		@Override
-		public void renderParticle(VertexBuffer buf, Entity nil, float delta, float x, float z, float yz, float xy, float xz) {
+		public void renderParticle(BufferBuilder buf, Entity nil, float delta, float x, float z, float yz, float xy, float xz) {
 			render(delta);
 		}
 	};
@@ -128,7 +122,7 @@ public final class AnimationRenderer {
 			Animation anim = anims.next();
 			EnumHand hand = anim.getHand();
 			anim.update(mc, world, player, player.getHeldItem(hand));
-			if (anim.isDone(mc, world, player, hand == EnumHand.MAIN_HAND ? main.func_190926_b() ? player.getHeldItem(hand) : main : off.func_190926_b() ? player.getHeldItem(hand) : off)) {
+			if (anim.isDone(mc, world, player, hand == EnumHand.MAIN_HAND ? main.isEmpty() ? player.getHeldItem(hand) : main : off.isEmpty() ? player.getHeldItem(hand) : off)) {
 				anims.remove();
 			}
 		}
@@ -178,12 +172,12 @@ public final class AnimationRenderer {
 			pep = renderer.prevEquippedProgressOffHand;
 			ep = renderer.equippedProgressOffHand;
 		}
-		if (stack.func_190926_b()) {
+		if (stack.isEmpty()) {
 			stack = player.getHeldItem(anim.getHand());
 		}
 		ItemStack heldStack = player.getHeldItem(anim.getHand());
 		float equip, renderEquip;
-		if (anim.getHand() == EnumHand.MAIN_HAND && anim.getSlot() == player.inventory.currentItem && heldStack.func_190926_b() || anim.doItemsMatch(stack, heldStack)) {
+		if (anim.getHand() == EnumHand.MAIN_HAND && anim.getSlot() == player.inventory.currentItem && heldStack.isEmpty() || anim.doItemsMatch(stack, heldStack)) {
 			equip = 1 - anim.getTransform(delta);
 			renderEquip = 0;
 		} else {
@@ -286,30 +280,14 @@ public final class AnimationRenderer {
 		matrix.rotate(side * -45, 0, 1, 0);
 		IBakedModel model = mc.getRenderItem().getItemModelWithOverrides(stack, mc.world, player);
 		TransformType transform = isLeft ? TransformType.FIRST_PERSON_LEFT_HAND : TransformType.FIRST_PERSON_RIGHT_HAND;
-		if (model instanceof IPerspectiveAwareModel) {
-			Pair<? extends IBakedModel, Matrix4f> pair = ((IPerspectiveAwareModel) model).handlePerspective(transform);
-			if (pair.getRight() != null) {
-				Matrix4d mat = new Matrix4d(pair.getRight());
-				if (isLeft) {
-					mat.mul(FLIP_X, mat);
-					mat.mul(mat, FLIP_X);
-				}
-				matrix.mul(mat);
+		Pair<? extends IBakedModel, Matrix4f> pair = model.handlePerspective(transform);
+		if (pair.getRight() != null) {
+			Matrix4d mat = new Matrix4d(pair.getRight());
+			if (isLeft) {
+				mat.mul(FLIP_X, mat);
+				mat.mul(mat, FLIP_X);
 			}
-		} else {
-			ItemTransformVec3f vec = model.getItemCameraTransforms().getTransform(transform);
-			if (vec != ItemTransformVec3f.DEFAULT) {
-				matrix.translate(side * (ItemCameraTransforms.offsetTranslateX + vec.translation.x), ItemCameraTransforms.offsetTranslateY + vec.translation.y, ItemCameraTransforms.offsetTranslateZ + vec.translation.z);
-				float rx = ItemCameraTransforms.offsetRotationX + vec.rotation.x;
-				float ry = ItemCameraTransforms.offsetRotationY + vec.rotation.y;
-				float rz = ItemCameraTransforms.offsetRotationZ + vec.rotation.z;
-				if (isLeft) {
-					ry = -ry;
-					rz = -rz;
-				}
-				matrix.rotate(Mth.getQuat(rx, ry, rz));
-				matrix.scale(ItemCameraTransforms.offsetScaleX + vec.scale.x, ItemCameraTransforms.offsetScaleY + vec.scale.y, ItemCameraTransforms.offsetScaleZ + vec.scale.z);
-			}
+			matrix.mul(mat);
 		}
 		Matrix4d modelView2 = matrix.getTransform();
 		Matrix4d modelView = Mth.lerp(modelView1, modelView2, t);

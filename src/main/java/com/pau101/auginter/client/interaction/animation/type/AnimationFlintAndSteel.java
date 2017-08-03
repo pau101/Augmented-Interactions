@@ -51,11 +51,11 @@ public final class AnimationFlintAndSteel extends AnimationDurated<ActionBlock.D
 			Vec3d vec = player.getLook(1);
 			int num = world.rand.nextInt(3) + 2;
 			while (num --> 0) {
-				world.spawnParticle(EnumParticleTypes.SMOKE_NORMAL, pos.xCoord, pos.yCoord, pos.zCoord, 0, 0, 0);
+				world.spawnParticle(EnumParticleTypes.SMOKE_NORMAL, pos.x, pos.y, pos.z, 0, 0, 0);
 			}
 			BlockPos ignitePos = mouseOver.getBlockPos().offset(mouseOver.sideHit);
 			if (tick != getActionTick(mc, world, player) || player.world.getBlockState(ignitePos).getBlock() != Blocks.FIRE) {
-				world.playSound(pos.xCoord, pos.yCoord, pos.zCoord, SoundEvents.ITEM_FLINTANDSTEEL_USE, SoundCategory.BLOCKS, 1, 0.8F + world.rand.nextFloat() * 0.4F, false);
+				world.playSound(pos.x, pos.y, pos.z, SoundEvents.ITEM_FLINTANDSTEEL_USE, SoundCategory.BLOCKS, 1, 0.8F + world.rand.nextFloat() * 0.4F, false);
 			}
 		}
 	}
@@ -65,7 +65,7 @@ public final class AnimationFlintAndSteel extends AnimationDurated<ActionBlock.D
 		untranslatePlayer(matrix, player, delta);
 		RayTraceResult mouseOver = getMouseOver();
 		Vec3d pos = mouseOver.hitVec.add(new Vec3d(mouseOver.sideHit.getDirectionVec()).scale(0.4F));
-		matrix.translate(pos.xCoord, pos.yCoord, pos.zCoord);
+		matrix.translate(pos.x, pos.y, pos.z);
 		matrix.rotate(-yaw, 0, 1, 0);
 		float percent = (getTick(delta) - getTransformDuration()) / (getDuration() - getTransformDuration() * 2);
 		boolean starting = percent >= 0 && percent <= 1;

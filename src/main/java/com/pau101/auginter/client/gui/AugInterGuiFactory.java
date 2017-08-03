@@ -22,18 +22,8 @@ public final class AugInterGuiFactory implements IModGuiFactory {
 	}
 
 	@Override
-	public Class<? extends GuiScreen> mainConfigGuiClass() {
-		return GuiConfigAugInter.class;
-	}
-
-	@Override
 	public Set<RuntimeOptionCategoryElement> runtimeGuiCategories() {
 		return Collections.emptySet();
-	}
-
-	@Override
-	public RuntimeOptionGuiHandler getHandlerFor(RuntimeOptionCategoryElement element) {
-		return null;
 	}
 
 }
