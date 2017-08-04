@@ -20,7 +20,7 @@ import net.minecraft.world.World;
 import net.minecraftforge.common.IShearable;
 
 public final class InteractionShears implements Interaction, AnimationSupplier<Void> {
-	private final ItemPredicate shears = s -> s.getItem() == Items.SHEARS; 
+	private final ItemPredicate shears = ItemPredicate.of(Items.SHEARS);
 
 	@Override
 	public InitiationResult<Void> applies(World world, EntityPlayer player, ItemStack stack, int slot, EnumHand hand, RayTraceResult mouseOver) {

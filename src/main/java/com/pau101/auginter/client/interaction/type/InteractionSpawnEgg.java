@@ -24,7 +24,7 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 
 public final class InteractionSpawnEgg implements Interaction, AnimationSupplier<Vec3d> {
-	private final ItemPredicate spawnEgg = s -> s.getItem() == Items.SPAWN_EGG;
+	private final ItemPredicate spawnEgg = ItemPredicate.of(Items.SPAWN_EGG);
 
 	@Override
 	public InitiationResult<?> applies(World world, EntityPlayer player, ItemStack stack, int slot, EnumHand hand, RayTraceResult mouseOver) {

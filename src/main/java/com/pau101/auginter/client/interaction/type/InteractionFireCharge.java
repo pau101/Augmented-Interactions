@@ -18,7 +18,7 @@ import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.world.World;
 
 public final class InteractionFireCharge implements Interaction, AnimationSupplier<Void> {
-	private final ItemPredicate fireCharge = s -> s.getItem() == Items.FIRE_CHARGE;
+	private final ItemPredicate fireCharge = ItemPredicate.of(Items.FIRE_CHARGE);
 
 	@Override
 	public InitiationResult<?> applies(World world, EntityPlayer player, ItemStack stack, int slot, EnumHand hand, RayTraceResult mouseOver) {

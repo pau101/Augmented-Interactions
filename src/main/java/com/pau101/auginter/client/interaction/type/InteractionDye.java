@@ -18,7 +18,7 @@ import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.world.World;
 
 public final class InteractionDye implements Interaction, AnimationSupplier<Void> {
-	private final ItemPredicate dye = s -> s.getItem() == Items.DYE;
+	private final ItemPredicate dye = ItemPredicate.of(Items.DYE);
 
 	@Override
 	public InitiationResult<?> applies(World world, EntityPlayer player, ItemStack stack, int slot, EnumHand hand, RayTraceResult mouseOver) {

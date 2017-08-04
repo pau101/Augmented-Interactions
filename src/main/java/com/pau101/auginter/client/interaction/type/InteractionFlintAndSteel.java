@@ -16,7 +16,7 @@ import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.world.World;
 
 public final class InteractionFlintAndSteel implements Interaction, AnimationSupplier<Void> {
-	private final ItemPredicate flintAndSteel = s -> s.getItem() == Items.FLINT_AND_STEEL;
+	private final ItemPredicate flintAndSteel = ItemPredicate.of(Items.FLINT_AND_STEEL);
 
 	@Override
 	public InitiationResult<Void> applies(World world, EntityPlayer player, ItemStack stack, int slot, EnumHand hand, RayTraceResult mouseOver) {

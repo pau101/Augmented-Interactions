@@ -30,13 +30,13 @@ import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.world.World;
 
 public final class InteractionCauldron implements Interaction {
-	private final ItemPredicate bucket = s -> s.getItem() == Items.BUCKET; 
+	private final ItemPredicate bucket = ItemPredicate.of(Items.BUCKET);
 
-	private final ItemPredicate waterBucket = s -> s.getItem() == Items.WATER_BUCKET; 
+	private final ItemPredicate waterBucket = ItemPredicate.of(Items.WATER_BUCKET);
 
 	private final Predicate<ItemStack> bucketOrWater = bucket.or(waterBucket);
 
-	private final ItemPredicate bottle = s -> s.getItem() == Items.GLASS_BOTTLE; 
+	private final ItemPredicate bottle = ItemPredicate.of(Items.GLASS_BOTTLE);
 
 	private final ItemPredicate waterBottle = s -> s.getItem() == Items.POTIONITEM && PotionUtils.getPotionFromItem(s) == PotionTypes.WATER;
 
