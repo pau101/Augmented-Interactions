@@ -12,6 +12,7 @@ import com.pau101.auginter.client.interaction.math.Mth;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumHand;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.world.World;
@@ -21,13 +22,15 @@ import net.minecraftforge.fluids.FluidUtil;
 import net.minecraftforge.fluids.capability.IFluidHandler;
 
 public final class InteractionBucketFill implements Interaction, AnimationSupplier<RayTraceResult> {
+	private static final String BUCKET = "bucket";
+
 	@Override
 	public InitiationResult<RayTraceResult> applies(World world, EntityPlayer player, ItemStack stack, int slot, EnumHand hand, RayTraceResult mouseOver) {
 		if (!ItemPredicateFluidHandler.INSTANCE.test(stack)) {
 			return InitiationResult.fail();
 		}
 		FluidStack fs = FluidUtil.getFluidContained(stack);
-		if (fs != null && fs.amount >= Fluid.BUCKET_VOLUME) {
+		if (fs != null && fs.amount >= Fluid.BUCKET_VOLUME || !isBucket(stack)) {
 			return InitiationResult.fail();
 		}
 		RayTraceResult result = Mth.rayTraceBlocks(world, player, true);
@@ -64,5 +67,10 @@ public final class InteractionBucketFill implements Interaction, AnimationSuppli
 				return getHand();
 			}
 		};
+	}
+
+	private static boolean isBucket(ItemStack stack) {
+		ResourceLocation name = stack.getItem().getRegistryName();
+		return name != null && name.getResourcePath().contains(BUCKET);
 	}
 }
