@@ -1,8 +1,7 @@
 package com.pau101.auginter.client;
 
 import java.io.File;
-
-import org.lwjgl.input.Keyboard;
+import java.util.List;
 
 import com.pau101.auginter.AugmentedInteractions;
 import com.pau101.auginter.client.interaction.AnimationSupplier;
@@ -11,12 +10,16 @@ import com.pau101.auginter.client.interaction.InteractionHandler;
 import com.pau101.auginter.client.interaction.render.AnimationRenderer;
 import com.pau101.auginter.common.Configurator;
 import com.pau101.auginter.common.Proxy;
-
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.settings.GameSettings;
 import net.minecraft.client.settings.KeyBinding;
 import net.minecraft.util.EnumHand;
+import net.minecraftforge.client.settings.KeyBindingMap;
 import net.minecraftforge.client.settings.KeyConflictContext;
 import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.fml.client.registry.ClientRegistry;
+import net.minecraftforge.fml.relauncher.ReflectionHelper;
+import org.lwjgl.input.Keyboard;
 
 public final class ClientProxy extends Proxy implements AnimationWarden {
 	private KeyBinding skipAnimation;
@@ -35,16 +38,35 @@ public final class ClientProxy extends Proxy implements AnimationWarden {
 		handler = new InteractionHandler(renderer, this, skipAnimation);
 		config = new ClientConfigurator(new Configuration(configFile), handler);
 		config.update();
+		macgyverTheUseItemHook();
+	}
+
+	private void macgyverTheUseItemHook() {
+		GameSettings settings = Minecraft.getMinecraft().gameSettings;
+		KeyBinding useItem = settings.keyBindUseItem;
+		((List<?>) ReflectionHelper.getPrivateValue(KeyBinding.class, null, "field_74516_a", "KEYBIND_ARRAY")).remove(useItem);
+		((KeyBindingMap) ReflectionHelper.getPrivateValue(KeyBinding.class, null, "field_74514_b", "HASH")).removeKey(useItem);
+		settings.keyBindUseItem = new KeyBinding(useItem.getKeyDescription(), useItem.getKeyCode(), useItem.getKeyCategory()) {
+			@Override
+			public boolean isPressed() {
+				if (super.isPressed()) {
+					for (EnumHand hand : EnumHand.values()) {
+						if (handler.rightClickMouse(hand)) {
+							while (super.isPressed());
+							KeyBinding.setKeyBindState(getKeyCode(), false);
+							return false;
+						}
+					}
+					return true;
+				}
+				return false;
+			}
+		};
 	}
 
 	@Override
 	public Configurator getConfigurator() {
 		return config;
-	}
-
-	@Override
-	public boolean rightClickMouse(EnumHand hand) {
-		return handler.rightClickMouse(hand);
 	}
 
 	@Override

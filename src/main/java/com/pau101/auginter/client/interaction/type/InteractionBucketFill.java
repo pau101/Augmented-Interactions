@@ -9,7 +9,6 @@ import com.pau101.auginter.client.interaction.animation.Animation;
 import com.pau101.auginter.client.interaction.animation.type.AnimationBucketFill;
 import com.pau101.auginter.client.interaction.item.ItemPredicateFluidHandler;
 import com.pau101.auginter.client.interaction.math.Mth;
-
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumHand;

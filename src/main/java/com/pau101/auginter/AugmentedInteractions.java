@@ -3,8 +3,6 @@ package com.pau101.auginter;
 import com.pau101.auginter.common.Configurator;
 import com.pau101.auginter.common.Proxy;
 import com.pau101.auginter.server.command.CommandAugInter;
-
-import net.minecraft.util.EnumHand;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventHandler;
 import net.minecraftforge.fml.common.SidedProxy;
@@ -39,10 +37,6 @@ public final class AugmentedInteractions {
 	@EventHandler
 	public void serverStarting(FMLServerStartingEvent event) {
 		event.registerServerCommand(new CommandAugInter());
-	}
-
-	public static boolean rightClickMouse(EnumHand hand) {
-		return proxy.rightClickMouse(hand);
 	}
 
 	public static Configurator getConfigurator() {

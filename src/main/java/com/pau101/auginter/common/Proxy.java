@@ -5,8 +5,6 @@ import java.io.File;
 import com.pau101.auginter.AugmentedInteractions;
 import com.pau101.auginter.server.net.MessageAdapter;
 import com.pau101.auginter.server.net.MessageSetAnimationVisibility;
-
-import net.minecraft.util.EnumHand;
 import net.minecraft.util.IThreadListener;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.network.NetworkRegistry;
@@ -31,8 +29,6 @@ public abstract class Proxy implements IMessageHandler<MessageAdapter, IMessage>
 	}
 
 	public abstract Configurator getConfigurator();
-
-	public abstract boolean rightClickMouse(EnumHand hand);
 
 	public void setAllAnimationVisiblity(boolean value) {}
 
