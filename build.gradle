@@ -9,17 +9,17 @@ buildscript {
 }
 apply plugin: "net.minecraftforge.gradle.forge"
 
-ext.modVersion = "1.0.0"
-version = "${modVersion}-1.12"
+ext.modVersion = "1.1.0"
+version = "${modVersion}-1.12.x"
 group = "com.pau101.auginter"
 archivesBaseName = "auginter"
 
 sourceCompatibility = targetCompatibility = JavaVersion.VERSION_1_8
 
 minecraft {
-	version = "1.12-14.21.1.2420"
+	version = "1.12.2-14.23.0.2491"
 	runDir = "run"
-	mappings = "snapshot_20170722"
+	mappings = "snapshot_20180107"
 	makeObfSourceJar = false
 }
 

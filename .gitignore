@@ -10,6 +10,7 @@ out
 *.iws
 *.iml
 .idea
+classes
 build
 .gradle
 run
