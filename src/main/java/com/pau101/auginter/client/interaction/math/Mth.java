@@ -76,7 +76,7 @@ public final class Mth {
 		double fov = Mth.lerp(aFov, bFov, t);
 		double aspect = Mth.lerp(aAspect, bAspect, t);
 		double zNear = Mth.lerp(aZNear, bZNear, t);
-		double zFar = Mth.lerp(bZFar, bZFar, t);
+		double zFar = Mth.lerp(aZFar, bZFar, t);
 		double deltaZ = zFar - zNear;
 		double cotangent = 1 / Math.tan(fov);
 		Matrix4d mat = new Matrix4d();

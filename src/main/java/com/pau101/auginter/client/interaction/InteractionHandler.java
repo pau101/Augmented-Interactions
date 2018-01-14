@@ -17,9 +17,9 @@ import com.pau101.auginter.client.interaction.type.InteractionCauldron;
 import com.pau101.auginter.client.interaction.type.InteractionDye;
 import com.pau101.auginter.client.interaction.type.InteractionFireCharge;
 import com.pau101.auginter.client.interaction.type.InteractionFlintAndSteel;
+import com.pau101.auginter.client.interaction.type.InteractionRecord;
 import com.pau101.auginter.client.interaction.type.InteractionShears;
 import com.pau101.auginter.client.interaction.type.InteractionSpawnEgg;
-
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
@@ -70,6 +70,7 @@ public final class InteractionHandler {
 		register(InteractionType.BLOCK, new InteractionFireCharge());
 		register(InteractionType.BLOCK, new InteractionSpawnEgg());
 		register(InteractionType.ENTITY, new InteractionDye());
+		register(InteractionType.BLOCK, new InteractionRecord());
 	}
 
 	private void register(InteractionType type, Interaction interaction) {
