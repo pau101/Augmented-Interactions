@@ -9,7 +9,7 @@ buildscript {
 }
 apply plugin: "net.minecraftforge.gradle.forge"
 
-ext.modVersion = "1.0.0"
+ext.modVersion = "1.1.0"
 version = "${modVersion}-1.11.2"
 group = "com.pau101.auginter"
 archivesBaseName = "auginter"
